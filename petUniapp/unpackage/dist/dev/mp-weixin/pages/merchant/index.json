@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "商家端",
+  "navigationBarBackgroundColor": "#F4A460",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
+}

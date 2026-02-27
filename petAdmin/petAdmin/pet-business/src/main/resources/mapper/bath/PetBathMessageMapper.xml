@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetBathMessageMapper">
+
+    <resultMap type="com.pet.system.domain.PetBathMessage" id="PetBathMessageResult">
+        <id     property="messageId"      column="message_id"       />
+        <result property="senderId"        column="sender_id"        />
+        <result property="senderType"      column="sender_type"      />
+        <result property="receiverId"      column="receiver_id"      />
+        <result property="receiverType"    column="receiver_type"     />
+        <result property="messageType"     column="message_type"     />
+        <result property="content"         column="content"          />
+        <result property="fileUrl"         column="file_url"         />
+        <result property="fileSize"        column="file_size"        />
+        <result property="fileDuration"    column="file_duration"    />
+        <result property="thumbnailUrl"   column="thumbnail_url"   />
+        <result property="isRead"          column="is_read"          />
+        <result property="readTime"        column="read_time"        />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"       column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="remark"          column="remark"           />
+    </resultMap>
+
+    <sql id="selectPetBathMessageVo">
+        select message_id, sender_id, sender_type, receiver_id, receiver_type, message_type, 
+               content, file_url, file_size, file_duration, thumbnail_url, is_read, read_time,
+               create_by, create_time, update_by, update_time, remark 
+        from pet_bath_message
+    </sql>
+
+    <select id="selectPetBathMessageList" parameterType="com.pet.system.domain.PetBathMessage" resultMap="PetBathMessageResult">
+        <include refid="selectPetBathMessageVo"/>
+        <where>
+            <if test="senderId != null">
+                AND sender_id = #{senderId}
+            </if>
+            <if test="senderType != null and senderType != ''">
+                AND sender_type = #{senderType}
+            </if>
+            <if test="receiverId != null">
+                AND receiver_id = #{receiverId}
+            </if>
+            <if test="receiverType != null and receiverType != ''">
+                AND receiver_type = #{receiverType}
+            </if>
+            <if test="messageType != null and messageType != ''">
+                AND message_type = #{messageType}
+            </if>
+            <if test="isRead != null and isRead != ''">
+                AND is_read = #{isRead}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectPetBathMessageByMessageId" parameterType="Long" resultMap="PetBathMessageResult">
+        <include refid="selectPetBathMessageVo"/>
+        where message_id = #{messageId}
+    </select>
+
+    <select id="selectChatHistory" resultMap="PetBathMessageResult">
+        <include refid="selectPetBathMessageVo"/>
+        where ((sender_id = #{senderId} AND sender_type = #{senderType} AND receiver_id = #{receiverId} AND receiver_type = #{receiverType})
+            OR (sender_id = #{receiverId} AND sender_type = #{receiverType} AND receiver_id = #{senderId} AND receiver_type = #{senderType}))
+        order by create_time asc
+    </select>
+
+    <select id="selectUnreadCount" resultType="int">
+        select count(*) from pet_bath_message
+        where receiver_id = #{receiverId} AND receiver_type = #{receiverType} AND is_read = '0'
+    </select>
+
+    <select id="selectChatList" resultMap="PetBathMessageResult">
+        select m1.* from pet_bath_message m1
+        inner join (
+            select 
+                case 
+                    when sender_id = #{userId} and sender_type = #{userType} then receiver_id
+                    else sender_id
+                end as other_user_id,
+                case 
+                    when sender_id = #{userId} and sender_type = #{userType} then receiver_type
+                    else sender_type
+                end as other_user_type,
+                max(create_time) as max_time
+            from pet_bath_message
+            where (sender_id = #{userId} AND sender_type = #{userType})
+               OR (receiver_id = #{userId} AND receiver_type = #{userType})
+            group by other_user_id, other_user_type
+        ) m2 on (
+            (m1.sender_id = #{userId} AND m1.sender_type = #{userType} AND m1.receiver_id = m2.other_user_id AND m1.receiver_type = m2.other_user_type)
+            OR (m1.receiver_id = #{userId} AND m1.receiver_type = #{userType} AND m1.sender_id = m2.other_user_id AND m1.sender_type = m2.other_user_type)
+        ) AND m1.create_time = m2.max_time
+        order by m1.create_time desc
+    </select>
+
+    <insert id="insertPetBathMessage" parameterType="com.pet.system.domain.PetBathMessage" useGeneratedKeys="true" keyProperty="messageId">
+        insert into pet_bath_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="senderId != null">sender_id,</if>
+            <if test="senderType != null">sender_type,</if>
+            <if test="receiverId != null">receiver_id,</if>
+            <if test="receiverType != null">receiver_type,</if>
+            <if test="messageType != null">message_type,</if>
+            <if test="content != null">content,</if>
+            <if test="fileUrl != null">file_url,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="fileDuration != null">file_duration,</if>
+            <if test="thumbnailUrl != null">thumbnail_url,</if>
+            <if test="isRead != null">is_read,</if>
+            <if test="readTime != null">read_time,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="senderId != null">#{senderId},</if>
+            <if test="senderType != null">#{senderType},</if>
+            <if test="receiverId != null">#{receiverId},</if>
+            <if test="receiverType != null">#{receiverType},</if>
+            <if test="messageType != null">#{messageType},</if>
+            <if test="content != null">#{content},</if>
+            <if test="fileUrl != null">#{fileUrl},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="fileDuration != null">#{fileDuration},</if>
+            <if test="thumbnailUrl != null">#{thumbnailUrl},</if>
+            <if test="isRead != null">#{isRead},</if>
+            <if test="readTime != null">#{readTime},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updatePetBathMessage" parameterType="com.pet.system.domain.PetBathMessage">
+        update pet_bath_message
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="senderId != null">sender_id = #{senderId},</if>
+            <if test="senderType != null">sender_type = #{senderType},</if>
+            <if test="receiverId != null">receiver_id = #{receiverId},</if>
+            <if test="receiverType != null">receiver_type = #{receiverType},</if>
+            <if test="messageType != null">message_type = #{messageType},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="fileDuration != null">file_duration = #{fileDuration},</if>
+            <if test="thumbnailUrl != null">thumbnail_url = #{thumbnailUrl},</if>
+            <if test="isRead != null">is_read = #{isRead},</if>
+            <if test="readTime != null">read_time = #{readTime},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where message_id = #{messageId}
+    </update>
+
+    <update id="markMessagesAsRead">
+        update pet_bath_message
+        set is_read = '1', read_time = sysdate()
+        where message_id in
+        <foreach item="messageId" collection="array" open="(" separator="," close=")">
+            #{messageId}
+        </foreach>
+    </update>
+
+    <update id="markChatAsRead">
+        update pet_bath_message
+        set is_read = '1', read_time = sysdate()
+        where ((sender_id = #{senderId} AND sender_type = #{senderType} AND receiver_id = #{receiverId} AND receiver_type = #{receiverType})
+            OR (sender_id = #{receiverId} AND sender_type = #{receiverType} AND receiver_id = #{senderId} AND receiver_type = #{senderType}))
+            AND is_read = '0'
+    </update>
+
+    <delete id="deletePetBathMessageByMessageId" parameterType="Long">
+        delete from pet_bath_message where message_id = #{messageId}
+    </delete>
+
+    <delete id="deletePetBathMessageByMessageIds" parameterType="Long">
+        delete from pet_bath_message where message_id in
+        <foreach item="messageId" collection="array" open="(" separator="," close=")">
+            #{messageId}
+        </foreach>
+    </delete>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+

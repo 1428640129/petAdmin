@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetBathUserMapper">
+    
+    <resultMap type="com.pet.system.domain.PetBathUser" id="PetBathUserResult">
+        <id     property="userId"      column="user_id"      />
+        <result property="userName"   column="user_name"   />
+        <result property="nickName"   column="nick_name"   />
+        <result property="phone"      column="phone"       />
+        <result property="password"   column="password"    />
+        <result property="userType"   column="user_type"    />
+        <result property="avatar"     column="avatar"      />
+        <result property="status"     column="status"      />
+        <result property="createBy"   column="create_by"   />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy"   column="update_by"   />
+        <result property="updateTime" column="update_time" />
+        <result property="remark"     column="remark"      />
+    </resultMap>
+    
+    <sql id="selectPetBathUserVo">
+        select user_id, user_name, nick_name, phone, password, user_type, avatar, status, create_by, create_time, update_by, update_time, remark 
+        from pet_bath_user
+    </sql>
+    
+    <select id="selectPetBathUserList" parameterType="com.pet.system.domain.PetBathUser" resultMap="PetBathUserResult">
+        <include refid="selectPetBathUserVo"/>
+        <where>
+            <if test="userName != null and userName != ''">
+                AND user_name like concat('%', #{userName}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="userType != null and userType != ''">
+                AND user_type = #{userType}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        order by user_id desc
+    </select>
+    
+    <select id="selectPetBathUserById" parameterType="Long" resultMap="PetBathUserResult">
+        <include refid="selectPetBathUserVo"/>
+        where user_id = #{userId}
+    </select>
+    
+    <select id="selectPetBathUserByUserName" parameterType="String" resultMap="PetBathUserResult">
+        <include refid="selectPetBathUserVo"/>
+        where user_name = #{userName}
+    </select>
+    
+    <insert id="insertPetBathUser" parameterType="com.pet.system.domain.PetBathUser" useGeneratedKeys="true" keyProperty="userId">
+        insert into pet_bath_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userName != null and userName != ''">user_name,</if>
+            <if test="nickName != null and nickName != ''">nick_name,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="password != null and password != ''">password,</if>
+            <if test="userType != null and userType != ''">user_type,</if>
+            <if test="avatar != null">avatar,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="nickName != null and nickName != ''">#{nickName},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="password != null and password != ''">#{password},</if>
+            <if test="userType != null and userType != ''">#{userType},</if>
+            <if test="avatar != null">#{avatar},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <update id="updatePetBathUser" parameterType="com.pet.system.domain.PetBathUser">
+        update pet_bath_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="nickName != null and nickName != ''">nick_name = #{nickName},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="userType != null and userType != ''">user_type = #{userType},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where user_id = #{userId}
+    </update>
+    
+    <delete id="deletePetBathUserById" parameterType="Long">
+        delete from pet_bath_user where user_id = #{userId}
+    </delete>
+    
+    <delete id="deletePetBathUserByIds" parameterType="Long">
+        delete from pet_bath_user where user_id in 
+        <foreach item="userId" collection="array" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </delete>
+    
+</mapper>
+
+
+
+
+

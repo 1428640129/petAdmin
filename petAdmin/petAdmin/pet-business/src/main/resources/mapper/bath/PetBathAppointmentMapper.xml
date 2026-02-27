@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetBathAppointmentMapper">
+    
+    <resultMap type="com.pet.system.domain.PetBathAppointment" id="PetBathAppointmentResult">
+        <id     property="appointmentId"      column="appointment_id"      />
+        <result property="appointmentNo"      column="appointment_no"      />
+        <result property="userId"             column="user_id"             />
+        <result property="petId"              column="pet_id"              />
+        <result property="petName"            column="pet_name"             />
+        <result property="petWeight"          column="pet_weight"          />
+        <result property="petType"            column="pet_type"             />
+        <result property="serviceId"          column="service_id"          />
+        <result property="serviceName"        column="service_name"        />
+        <result property="appointmentTime"   column="appointment_time"    />
+        <result property="expectedPrice"      column="expected_price"      />
+        <result property="actualPrice"       column="actual_price"        />
+        <result property="status"             column="status"              />
+        <result property="cancelReason"       column="cancel_reason"       />
+        <result property="cancelTime"         column="cancel_time"          />
+        <result property="createBy"           column="create_by"           />
+        <result property="createTime"         column="create_time"         />
+        <result property="updateBy"           column="update_by"           />
+        <result property="updateTime"         column="update_time"         />
+        <result property="remark"             column="remark"              />
+    </resultMap>
+    
+    <sql id="selectBathAppointmentVo">
+        select appointment_id, appointment_no, user_id, pet_id, pet_name, pet_weight, pet_type, service_id, service_name, 
+               appointment_time, expected_price, actual_price, status, cancel_reason, cancel_time, 
+               create_by, create_time, update_by, update_time, remark 
+        from pet_bath_appointment
+    </sql>
+    
+    <select id="selectBathAppointmentList" parameterType="com.pet.system.domain.PetBathAppointment" resultMap="PetBathAppointmentResult">
+        <include refid="selectBathAppointmentVo"/>
+        <where>
+            <if test="appointmentNo != null and appointmentNo != ''">
+                AND appointment_no like concat('%', #{appointmentNo}, '%')
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="petName != null and petName != ''">
+                AND pet_name like concat('%', #{petName}, '%')
+            </if>
+            <if test="serviceId != null">
+                AND service_id = #{serviceId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND date_format(appointment_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND date_format(appointment_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by appointment_time desc
+    </select>
+    
+    <select id="selectBathAppointmentById" parameterType="Long" resultMap="PetBathAppointmentResult">
+        <include refid="selectBathAppointmentVo"/>
+        where appointment_id = #{appointmentId}
+    </select>
+    
+    <insert id="insertBathAppointment" parameterType="com.pet.system.domain.PetBathAppointment" useGeneratedKeys="true" keyProperty="appointmentId">
+        insert into pet_bath_appointment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="appointmentNo != null and appointmentNo != ''">appointment_no,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="petId != null">pet_id,</if>
+            <if test="petName != null">pet_name,</if>
+            <if test="petWeight != null">pet_weight,</if>
+            <if test="petType != null">pet_type,</if>
+            <if test="serviceId != null">service_id,</if>
+            <if test="serviceName != null">service_name,</if>
+            <if test="appointmentTime != null">appointment_time,</if>
+            <if test="expectedPrice != null">expected_price,</if>
+            <if test="actualPrice != null">actual_price,</if>
+            <if test="status != null">status,</if>
+            <if test="cancelReason != null">cancel_reason,</if>
+            <if test="cancelTime != null">cancel_time,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="appointmentNo != null and appointmentNo != ''">#{appointmentNo},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="petId != null">#{petId},</if>
+            <if test="petName != null">#{petName},</if>
+            <if test="petWeight != null">#{petWeight},</if>
+            <if test="petType != null">#{petType},</if>
+            <if test="serviceId != null">#{serviceId},</if>
+            <if test="serviceName != null">#{serviceName},</if>
+            <if test="appointmentTime != null">#{appointmentTime},</if>
+            <if test="expectedPrice != null">#{expectedPrice},</if>
+            <if test="actualPrice != null">#{actualPrice},</if>
+            <if test="status != null">#{status},</if>
+            <if test="cancelReason != null">#{cancelReason},</if>
+            <if test="cancelTime != null">#{cancelTime},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <update id="updateBathAppointment" parameterType="com.pet.system.domain.PetBathAppointment">
+        update pet_bath_appointment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="appointmentNo != null and appointmentNo != ''">appointment_no = #{appointmentNo},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="petId != null">pet_id = #{petId},</if>
+            <if test="petName != null">pet_name = #{petName},</if>
+            <if test="petWeight != null">pet_weight = #{petWeight},</if>
+            <if test="petType != null">pet_type = #{petType},</if>
+            <if test="serviceId != null">service_id = #{serviceId},</if>
+            <if test="serviceName != null">service_name = #{serviceName},</if>
+            <if test="appointmentTime != null">appointment_time = #{appointmentTime},</if>
+            <if test="expectedPrice != null">expected_price = #{expectedPrice},</if>
+            <if test="actualPrice != null">actual_price = #{actualPrice},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="cancelTime != null">cancel_time = #{cancelTime},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where appointment_id = #{appointmentId}
+    </update>
+    
+    <delete id="deleteBathAppointmentById" parameterType="Long">
+        delete from pet_bath_appointment where appointment_id = #{appointmentId}
+    </delete>
+    
+    <delete id="deleteBathAppointmentByIds" parameterType="Long">
+        delete from pet_bath_appointment where appointment_id in 
+        <foreach item="appointmentId" collection="array" open="(" separator="," close=")">
+            #{appointmentId}
+        </foreach>
+    </delete>
+    
+</mapper>
+

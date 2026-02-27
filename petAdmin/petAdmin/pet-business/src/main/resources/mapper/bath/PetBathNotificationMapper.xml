@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetBathNotificationMapper">
+    
+    <resultMap type="com.pet.system.domain.PetBathNotification" id="PetBathNotificationResult">
+        <id     property="notificationId"     column="notification_id"     />
+        <result property="userId"             column="user_id"             />
+        <result property="appointmentId"      column="appointment_id"      />
+        <result property="orderId"            column="order_id"            />
+        <result property="notificationType"   column="notification_type"   />
+        <result property="title"              column="title"               />
+        <result property="content"            column="content"             />
+        <result property="isRead"             column="is_read"             />
+        <result property="readTime"           column="read_time"           />
+        <result property="createTime"         column="create_time"         />
+    </resultMap>
+    
+    <sql id="selectBathNotificationVo">
+        select notification_id, user_id, appointment_id, order_id, notification_type, title, content, 
+               is_read, read_time, create_time 
+        from pet_bath_notification
+    </sql>
+    
+    <select id="selectBathNotificationList" parameterType="com.pet.system.domain.PetBathNotification" resultMap="PetBathNotificationResult">
+        <include refid="selectBathNotificationVo"/>
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="appointmentId != null">
+                AND appointment_id = #{appointmentId}
+            </if>
+            <if test="orderId != null">
+                AND order_id = #{orderId}
+            </if>
+            <if test="notificationType != null and notificationType != ''">
+                AND notification_type = #{notificationType}
+            </if>
+            <if test="isRead != null and isRead != ''">
+                AND is_read = #{isRead}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND date_format(create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectBathNotificationById" parameterType="Long" resultMap="PetBathNotificationResult">
+        <include refid="selectBathNotificationVo"/>
+        where notification_id = #{notificationId}
+    </select>
+    
+    <insert id="insertBathNotification" parameterType="com.pet.system.domain.PetBathNotification" useGeneratedKeys="true" keyProperty="notificationId">
+        insert into pet_bath_notification
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="appointmentId != null">appointment_id,</if>
+            <if test="orderId != null">order_id,</if>
+            <if test="notificationType != null and notificationType != ''">notification_type,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="content != null">content,</if>
+            <if test="isRead != null">is_read,</if>
+            <if test="readTime != null">read_time,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="appointmentId != null">#{appointmentId},</if>
+            <if test="orderId != null">#{orderId},</if>
+            <if test="notificationType != null and notificationType != ''">#{notificationType},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="content != null">#{content},</if>
+            <if test="isRead != null">#{isRead},</if>
+            <if test="readTime != null">#{readTime},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <update id="updateBathNotification" parameterType="com.pet.system.domain.PetBathNotification">
+        update pet_bath_notification
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="appointmentId != null">appointment_id = #{appointmentId},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="notificationType != null and notificationType != ''">notification_type = #{notificationType},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="isRead != null">is_read = #{isRead},</if>
+            <if test="readTime != null">read_time = #{readTime},</if>
+        </trim>
+        where notification_id = #{notificationId}
+    </update>
+    
+    <delete id="deleteBathNotificationById" parameterType="Long">
+        delete from pet_bath_notification where notification_id = #{notificationId}
+    </delete>
+    
+    <delete id="deleteBathNotificationByIds" parameterType="Long">
+        delete from pet_bath_notification where notification_id in 
+        <foreach item="notificationId" collection="array" open="(" separator="," close=")">
+            #{notificationId}
+        </foreach>
+    </delete>
+    
+</mapper>
+

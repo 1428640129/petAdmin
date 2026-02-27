@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>pet</artifactId>
+        <groupId>com.pet</groupId>
+        <version>3.9.1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>pet-business</artifactId>
+
+    <description>
+        business业务模块
+    </description>
+
+    <dependencies>
+
+        <!-- 通用工具-->
+        <dependency>
+            <groupId>com.pet</groupId>
+            <artifactId>pet-common</artifactId>
+        </dependency>
+
+        <!-- 系统模块（用于引用domain实体类）-->
+        <dependency>
+            <groupId>com.pet</groupId>
+            <artifactId>pet-system</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>
+

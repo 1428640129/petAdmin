@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/service/service",
+    "pages/my/my",
+    "pages/message/message",
+    "pages/chat/chat",
+    "pages/login/login",
+    "pages/merchant/index",
+    "pages/merchant/detail",
+    "pages/merchant/reply",
+    "pages/appointment/appointment",
+    "pages/profile/profile",
+    "pages/settings/settings"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "宠浴",
+    "navigationBarBackgroundColor": "#F4A460",
+    "backgroundColor": "#f7fafc"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#ff6b35",
+    "borderStyle": "white",
+    "backgroundColor": "#fffaf0",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/appointment/appointment",
+        "iconPath": "static/tabbar/service.png",
+        "selectedIconPath": "static/tabbar/service-active.png",
+        "text": "我的预约"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "iconPath": "static/tabbar/my.png",
+        "selectedIconPath": "static/tabbar/my-active.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {}
+}

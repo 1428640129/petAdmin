@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetBathServicePriceMapper">
+    
+    <resultMap type="com.pet.system.domain.PetBathServicePrice" id="PetBathServicePriceResult">
+        <id     property="priceId"        column="price_id"        />
+        <result property="serviceId"      column="service_id"      />
+        <result property="petType"        column="pet_type"        />
+        <result property="weightMin"      column="weight_min"      />
+        <result property="weightMax"      column="weight_max"      />
+        <result property="price"          column="price"            />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"      />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"      />
+    </resultMap>
+    
+    <sql id="selectBathServicePriceVo">
+        select price_id, service_id, pet_type, weight_min, weight_max, price, create_by, create_time, update_by, update_time 
+        from pet_bath_service_price
+    </sql>
+    
+    <select id="selectBathServicePriceList" parameterType="Long" resultMap="PetBathServicePriceResult">
+        <include refid="selectBathServicePriceVo"/>
+        where service_id = #{serviceId}
+        order by pet_type, weight_min
+    </select>
+    
+    <select id="selectPriceByWeight" resultMap="PetBathServicePriceResult">
+        <include refid="selectBathServicePriceVo"/>
+        where service_id = #{serviceId}
+          and pet_type = #{petType}
+          and weight_min &lt;= #{weight}
+          and weight_max &gt;= #{weight}
+        limit 1
+    </select>
+    
+    <insert id="insertBathServicePrice" parameterType="com.pet.system.domain.PetBathServicePrice" useGeneratedKeys="true" keyProperty="priceId">
+        insert into pet_bath_service_price
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="serviceId != null">service_id,</if>
+            <if test="petType != null">pet_type,</if>
+            <if test="weightMin != null">weight_min,</if>
+            <if test="weightMax != null">weight_max,</if>
+            <if test="price != null">price,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="serviceId != null">#{serviceId},</if>
+            <if test="petType != null">#{petType},</if>
+            <if test="weightMin != null">#{weightMin},</if>
+            <if test="weightMax != null">#{weightMax},</if>
+            <if test="price != null">#{price},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <insert id="insertBathServicePriceBatch" parameterType="java.util.List">
+        insert into pet_bath_service_price(service_id, pet_type, weight_min, weight_max, price, create_by, create_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.serviceId}, #{item.petType}, #{item.weightMin}, #{item.weightMax}, #{item.price}, #{item.createBy}, sysdate())
+        </foreach>
+    </insert>
+    
+    <update id="updateBathServicePrice" parameterType="com.pet.system.domain.PetBathServicePrice">
+        update pet_bath_service_price
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="serviceId != null">service_id = #{serviceId},</if>
+            <if test="petType != null">pet_type = #{petType},</if>
+            <if test="weightMin != null">weight_min = #{weightMin},</if>
+            <if test="weightMax != null">weight_max = #{weightMax},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where price_id = #{priceId}
+    </update>
+    
+    <delete id="deleteBathServicePriceById" parameterType="Long">
+        delete from pet_bath_service_price where price_id = #{priceId}
+    </delete>
+    
+    <delete id="deleteBathServicePriceByServiceId" parameterType="Long">
+        delete from pet_bath_service_price where service_id = #{serviceId}
+    </delete>
+    
+    <delete id="deleteBathServicePriceByIds" parameterType="Long">
+        delete from pet_bath_service_price where price_id in 
+        <foreach item="priceId" collection="array" open="(" separator="," close=")">
+            #{priceId}
+        </foreach>
+    </delete>
+    
+</mapper>
+

@@ -1,0 +1,215 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 - 宠物主题配色 */
+/* 文字基本颜色 */
+/* 背景颜色 - 宠物主题配色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.container.data-v-46294a64 {
+  min-height: 100vh;
+  background-color: #f7fafc;
+  padding-bottom: 100rpx;
+}
+.stats-section.data-v-46294a64 {
+  background-color: #fff;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+.stats-row.data-v-46294a64 {
+  display: flex;
+  justify-content: space-around;
+}
+.stat-card.data-v-46294a64 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+.stat-value.data-v-46294a64 {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #F4A460;
+  margin-bottom: 12rpx;
+}
+.stat-label.data-v-46294a64 {
+  font-size: 24rpx;
+  color: #666;
+}
+.filter-section.data-v-46294a64 {
+  background-color: #fff;
+  padding: 20rpx 0;
+  margin-bottom: 20rpx;
+}
+.filter-tabs.data-v-46294a64 {
+  white-space: nowrap;
+  padding: 0 30rpx;
+}
+.filter-tab.data-v-46294a64 {
+  display: inline-flex;
+  align-items: center;
+  padding: 12rpx 24rpx;
+  margin-right: 20rpx;
+  border-radius: 40rpx;
+  background-color: #f5f5f5;
+  font-size: 26rpx;
+  color: #666;
+}
+.filter-tab.active.data-v-46294a64 {
+  background-color: #FFF8F0;
+  color: #F4A460;
+  font-weight: bold;
+}
+.filter-badge.data-v-46294a64 {
+  background-color: #ff4444;
+  color: #fff;
+  border-radius: 20rpx;
+  padding: 2rpx 8rpx;
+  font-size: 20rpx;
+  margin-left: 8rpx;
+}
+.appointment-list.data-v-46294a64 {
+  padding: 0 30rpx;
+}
+.appointment-card.data-v-46294a64 {
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+.card-header.data-v-46294a64 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.header-left.data-v-46294a64 {
+  flex: 1;
+}
+.appointment-time.data-v-46294a64 {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.service-name.data-v-46294a64 {
+  font-size: 24rpx;
+  color: #999;
+}
+.status-badge.data-v-46294a64 {
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+}
+.status-badge.status-0.data-v-46294a64 {
+  background-color: #FFF8F0;
+  color: #F4A460;
+}
+.status-badge.status-1.data-v-46294a64 {
+  background-color: #E6F7FF;
+  color: #1890ff;
+}
+.status-badge.status-2.data-v-46294a64 {
+  background-color: #E6F7FF;
+  color: #1890ff;
+}
+.status-badge.status-3.data-v-46294a64 {
+  background-color: #F6FFED;
+  color: #52c41a;
+}
+.status-badge.status-4.data-v-46294a64 {
+  background-color: #F5F5F5;
+  color: #999;
+}
+.card-content.data-v-46294a64 {
+  margin-bottom: 24rpx;
+}
+.info-row.data-v-46294a64 {
+  display: flex;
+  margin-bottom: 12rpx;
+  font-size: 26rpx;
+}
+.info-label.data-v-46294a64 {
+  color: #666;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+.info-value.data-v-46294a64 {
+  color: #333;
+  flex: 1;
+}
+.card-footer.data-v-46294a64 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+.price.data-v-46294a64 {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #F4A460;
+}
+.actions.data-v-46294a64 {
+  display: flex;
+  gap: 16rpx;
+}
+.action-btn.data-v-46294a64 {
+  border-radius: 20rpx;
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+  border: none;
+}
+.action-btn.confirm.data-v-46294a64 {
+  background-color: #F4A460;
+  color: #fff;
+}
+.action-btn.cancel.data-v-46294a64 {
+  background-color: #fff;
+  color: #999;
+  border: 1rpx solid #e0e0e0;
+}
+.action-btn.complete.data-v-46294a64 {
+  background-color: #52c41a;
+  color: #fff;
+}
+.action-btn.reply.data-v-46294a64 {
+  background-color: #1890ff;
+  color: #fff;
+}
+.empty-state.data-v-46294a64 {
+  text-align: center;
+  padding: 120rpx 30rpx;
+  background-color: #fff;
+  border-radius: 24rpx;
+}
+.empty-icon.data-v-46294a64 {
+  font-size: 120rpx;
+  display: block;
+  margin-bottom: 30rpx;
+}
+.empty-text.data-v-46294a64 {
+  font-size: 28rpx;
+  color: #999;
+}

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetBathReviewMapper">
+    
+    <resultMap type="com.pet.system.domain.PetBathReview" id="PetBathReviewResult">
+        <id     property="reviewId"           column="review_id"           />
+        <result property="orderId"            column="order_id"            />
+        <result property="appointmentId"      column="appointment_id"      />
+        <result property="userId"             column="user_id"              />
+        <result property="serviceId"          column="service_id"          />
+        <result property="rating"             column="rating"               />
+        <result property="content"            column="content"             />
+        <result property="images"             column="images"               />
+        <result property="replyContent"       column="reply_content"       />
+        <result property="replyTime"          column="reply_time"           />
+        <result property="status"             column="status"              />
+        <result property="createTime"         column="create_time"          />
+        <result property="updateTime"         column="update_time"          />
+    </resultMap>
+    
+    <sql id="selectBathReviewVo">
+        select review_id, order_id, appointment_id, user_id, service_id, rating, content, images, 
+               reply_content, reply_time, status, create_time, update_time 
+        from pet_bath_review
+    </sql>
+    
+    <select id="selectBathReviewList" parameterType="com.pet.system.domain.PetBathReview" resultMap="PetBathReviewResult">
+        <include refid="selectBathReviewVo"/>
+        <where>
+            <if test="orderId != null">
+                AND order_id = #{orderId}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="serviceId != null">
+                AND service_id = #{serviceId}
+            </if>
+            <if test="rating != null">
+                AND rating = #{rating}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND date_format(create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectBathReviewById" parameterType="Long" resultMap="PetBathReviewResult">
+        <include refid="selectBathReviewVo"/>
+        where review_id = #{reviewId}
+    </select>
+    
+    <insert id="insertBathReview" parameterType="com.pet.system.domain.PetBathReview" useGeneratedKeys="true" keyProperty="reviewId">
+        insert into pet_bath_review
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">order_id,</if>
+            <if test="appointmentId != null">appointment_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="serviceId != null">service_id,</if>
+            <if test="rating != null">rating,</if>
+            <if test="content != null">content,</if>
+            <if test="images != null">images,</if>
+            <if test="replyContent != null">reply_content,</if>
+            <if test="replyTime != null">reply_time,</if>
+            <if test="status != null">status,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">#{orderId},</if>
+            <if test="appointmentId != null">#{appointmentId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="serviceId != null">#{serviceId},</if>
+            <if test="rating != null">#{rating},</if>
+            <if test="content != null">#{content},</if>
+            <if test="images != null">#{images},</if>
+            <if test="replyContent != null">#{replyContent},</if>
+            <if test="replyTime != null">#{replyTime},</if>
+            <if test="status != null">#{status},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <update id="updateBathReview" parameterType="com.pet.system.domain.PetBathReview">
+        update pet_bath_review
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="appointmentId != null">appointment_id = #{appointmentId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="serviceId != null">service_id = #{serviceId},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="replyContent != null">reply_content = #{replyContent},</if>
+            <if test="replyTime != null">reply_time = #{replyTime},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = sysdate()
+        </trim>
+        where review_id = #{reviewId}
+    </update>
+    
+    <delete id="deleteBathReviewById" parameterType="Long">
+        delete from pet_bath_review where review_id = #{reviewId}
+    </delete>
+    
+    <delete id="deleteBathReviewByIds" parameterType="Long">
+        delete from pet_bath_review where review_id in 
+        <foreach item="reviewId" collection="array" open="(" separator="," close=")">
+            #{reviewId}
+        </foreach>
+    </delete>
+    
+</mapper>
+
+
+
+
+
+
+
+
+
+

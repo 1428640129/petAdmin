@@ -16,8 +16,7 @@ function getInitSearchParams() {
     current: 1,
     size: 30,
     userId: undefined,
-    notificationType: undefined,
-    isRead: undefined
+    notificationType: undefined
   };
 }
 
@@ -58,22 +57,16 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
     { prop: 'index', type: 'index', label: $t('common.index'), width: 64 },
     { prop: 'title', label: '通知标题', minWidth: 150 },
     { prop: 'content', label: '通知内容', minWidth: 200 },
-    { prop: 'notificationType', label: '通知类型', width: 150 },
     {
-      prop: 'isRead',
-      label: '是否已读',
-      align: 'center',
-      width: 100,
+      prop: 'notificationType',
+      label: '通知类型',
+      width: 150,
       formatter: row => {
-        const tagMap: Record<string, string> = {
-          '0': 'warning',
-          '1': 'success'
+        const typeMap: Record<string, string> = {
+          '1': '预约确认',
+          '3': '服务完成'
         };
-        const labelMap: Record<string, string> = {
-          '0': '未读',
-          '1': '已读'
-        };
-        return <ElTag type={tagMap[row.isRead] || 'info'}>{labelMap[row.isRead] || row.isRead}</ElTag>;
+        return typeMap[row.notificationType] || row.notificationType;
       }
     },
     { prop: 'createTime', label: '创建时间', width: 180 },

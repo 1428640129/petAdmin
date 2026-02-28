@@ -29,6 +29,12 @@
             <artifactId>pet-system</artifactId>
         </dependency>
 
+        <!-- 框架模块（用于复用短信等基础能力）-->
+        <dependency>
+            <groupId>com.pet</groupId>
+            <artifactId>pet-framework</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

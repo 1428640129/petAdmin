@@ -22,7 +22,11 @@ import com.pet.common.enums.BusinessType;
 import com.pet.common.utils.poi.ExcelUtil;
 import java.util.Map;
 import com.pet.system.domain.PetBathAppointment;
+import com.pet.system.domain.PetBathReview;
 import com.pet.business.service.IPetBathAppointmentService;
+import com.pet.business.service.IPetBathReviewService;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * 预约Controller
@@ -35,6 +39,9 @@ public class PetBathAppointmentController extends BaseController
 {
     @Autowired
     private IPetBathAppointmentService bathAppointmentService;
+
+    @Autowired
+    private IPetBathReviewService bathReviewService;
 
     /**
      * 查询预约列表
@@ -103,6 +110,70 @@ public class PetBathAppointmentController extends BaseController
             
             // 查询预约列表
             List<PetBathAppointment> list = bathAppointmentService.selectBathAppointmentList(appointment);
+            
+            // 为已完成状态的预约添加评价状态标记
+            if (list != null && !list.isEmpty()) {
+                // 收集所有已完成状态的预约ID
+                List<Long> completedAppointmentIds = new ArrayList<>();
+                for (PetBathAppointment apt : list) {
+                    if ("3".equals(apt.getStatus())) { // 3=已完成
+                        completedAppointmentIds.add(apt.getAppointmentId());
+                    }
+                }
+                
+                // 批量查询评价状态（一次性查询所有已完成预约的评价）
+                java.util.Set<Long> reviewedAppointmentIds = new java.util.HashSet<>();
+                if (!completedAppointmentIds.isEmpty()) {
+                    // 查询所有已完成预约的评价（状态为0的正常评价）
+                    PetBathReview reviewQuery = new PetBathReview();
+                    reviewQuery.setStatus("0"); // 0=正常状态
+                    List<PetBathReview> allReviews = bathReviewService.selectBathReviewList(reviewQuery);
+                    if (allReviews != null) {
+                        for (PetBathReview review : allReviews) {
+                            if (review.getAppointmentId() != null && completedAppointmentIds.contains(review.getAppointmentId())) {
+                                reviewedAppointmentIds.add(review.getAppointmentId());
+                            }
+                        }
+                    }
+                }
+                
+                // 将预约对象转换为Map，添加hasReview字段
+                List<Map<String, Object>> resultList = new ArrayList<>();
+                for (PetBathAppointment apt : list) {
+                    Map<String, Object> itemMap = new HashMap<>();
+                    // 复制所有字段
+                    itemMap.put("appointmentId", apt.getAppointmentId());
+                    itemMap.put("appointmentNo", apt.getAppointmentNo());
+                    itemMap.put("userId", apt.getUserId());
+                    itemMap.put("petId", apt.getPetId());
+                    itemMap.put("petName", apt.getPetName());
+                    itemMap.put("petWeight", apt.getPetWeight());
+                    itemMap.put("petType", apt.getPetType());
+                    itemMap.put("serviceId", apt.getServiceId());
+                    itemMap.put("serviceName", apt.getServiceName());
+                    itemMap.put("appointmentTime", apt.getAppointmentTime());
+                    itemMap.put("expectedPrice", apt.getExpectedPrice());
+                    itemMap.put("actualPrice", apt.getActualPrice());
+                    itemMap.put("status", apt.getStatus());
+                    itemMap.put("cancelReason", apt.getCancelReason());
+                    itemMap.put("cancelTime", apt.getCancelTime());
+                    itemMap.put("remark", apt.getRemark());
+                    itemMap.put("createTime", apt.getCreateTime());
+                    itemMap.put("updateTime", apt.getUpdateTime());
+                    // 添加评价状态标记（仅对已完成状态的预约）
+                    if ("3".equals(apt.getStatus())) {
+                        itemMap.put("hasReview", reviewedAppointmentIds.contains(apt.getAppointmentId()));
+                    } else {
+                        itemMap.put("hasReview", false);
+                    }
+                    resultList.add(itemMap);
+                }
+                
+                TableDataInfo dataTable = getDataTable(list);
+                dataTable.setRows(resultList);
+                return dataTable;
+            }
+            
             return getDataTable(list);
         } catch (Exception e) {
             // 返回空的TableDataInfo而不是AjaxResult

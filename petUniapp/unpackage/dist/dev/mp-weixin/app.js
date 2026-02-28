@@ -12,6 +12,7 @@ if (!Math) {
   "./pages/merchant/detail.js";
   "./pages/merchant/reply.js";
   "./pages/appointment/appointment.js";
+  "./pages/review/review.js";
   "./pages/profile/profile.js";
   "./pages/settings/settings.js";
 }

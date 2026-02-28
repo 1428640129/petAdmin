@@ -20,6 +20,9 @@ const _sfc_main = {
       // 服务列表
       services: [],
       loading: false,
+      // 评价列表
+      reviews: [],
+      loadingReviews: false,
       // 毛发类型选项（0=短毛,1=长毛）
       hairTypes: [
         { value: "0", label: "短毛" },
@@ -106,7 +109,7 @@ const _sfc_main = {
           throw new Error(((_a = res.data) == null ? void 0 : _a.msg) || "获取服务列表失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/service/service.vue:303", "获取服务列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:336", "获取服务列表失败:", error);
         common_vendor.index.showToast({
           title: error.message || "获取服务列表失败",
           icon: "none"
@@ -119,6 +122,63 @@ const _sfc_main = {
     selectService(service) {
       this.formData.serviceId = service.id;
       this.calculatePrice();
+      this.loadReviews(service.id);
+    },
+    // 加载评价列表
+    async loadReviews(serviceId) {
+      if (!serviceId) {
+        this.reviews = [];
+        return;
+      }
+      this.loadingReviews = true;
+      try {
+        const app = getApp();
+        const baseUrl = app && app.globalData && app.globalData.baseUrl || "http://localhost:8080";
+        const res = await common_vendor.index.request({
+          url: `${baseUrl}/bath/review/miniprogram/list`,
+          method: "GET",
+          data: {
+            serviceId,
+            pageNum: 1,
+            pageSize: 10
+          },
+          header: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (res.statusCode === 200 && res.data && res.data.code === 200) {
+          this.reviews = res.data.rows || [];
+        } else {
+          this.reviews = [];
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/service/service.vue:384", "加载评价失败:", error);
+        this.reviews = [];
+      } finally {
+        this.loadingReviews = false;
+      }
+    },
+    // 获取星级显示
+    getStars(rating) {
+      if (!rating)
+        return "☆☆☆☆☆";
+      const fullStars = "★".repeat(rating);
+      const emptyStars = "☆".repeat(5 - rating);
+      return fullStars + emptyStars;
+    },
+    // 格式化时间
+    formatTime(timeStr) {
+      if (!timeStr)
+        return "";
+      try {
+        const date = new Date(timeStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      } catch (e) {
+        return timeStr;
+      }
     },
     // 毛发类型改变
     onHairTypeChange(e) {
@@ -170,7 +230,7 @@ const _sfc_main = {
           this.formData.expectedPrice = res.data.data || null;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/service/service.vue:374", "计算价格失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:466", "计算价格失败:", error);
       }
     },
     // 格式化价格
@@ -263,7 +323,7 @@ const _sfc_main = {
         }
       } catch (error) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/service/service.vue:483", "提交预约失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:575", "提交预约失败:", error);
         common_vendor.index.showToast({
           title: error.message || "预约失败",
           icon: "none"
@@ -293,38 +353,62 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $options.selectedService ? {
     c: common_vendor.t($options.selectedService.desc || "暂无服务介绍")
   } : {}, {
-    d: $data.formData.petName,
-    e: common_vendor.o(($event) => $data.formData.petName = $event.detail.value),
-    f: common_vendor.t($data.formData.hairType ? $options.getHairTypeLabel($data.formData.hairType) : "请选择毛发类型"),
-    g: !$data.formData.hairType ? 1 : "",
-    h: $data.hairTypes,
-    i: $data.hairTypeIndex,
-    j: common_vendor.o((...args) => $options.onHairTypeChange && $options.onHairTypeChange(...args)),
-    k: $data.formData.petBreed,
-    l: common_vendor.o(($event) => $data.formData.petBreed = $event.detail.value),
-    m: common_vendor.o((...args) => $options.calculatePrice && $options.calculatePrice(...args)),
-    n: $data.formData.petWeight,
-    o: common_vendor.o(($event) => $data.formData.petWeight = $event.detail.value),
-    p: common_vendor.t($data.formData.appointmentDate || "请选择日期"),
-    q: !$data.formData.appointmentDate ? 1 : "",
-    r: $data.formData.appointmentDate,
-    s: $options.minDate,
-    t: common_vendor.o((...args) => $options.onDateChange && $options.onDateChange(...args)),
-    v: common_vendor.t($data.formData.appointmentTime || "请选择时间"),
-    w: !$data.formData.appointmentTime ? 1 : "",
-    x: $data.formData.appointmentTime,
-    y: common_vendor.o((...args) => $options.onTimeChange && $options.onTimeChange(...args)),
-    z: $data.formData.contactPhone,
-    A: common_vendor.o(($event) => $data.formData.contactPhone = $event.detail.value),
-    B: $data.formData.remark,
-    C: common_vendor.o(($event) => $data.formData.remark = $event.detail.value),
-    D: $data.formData.expectedPrice
-  }, $data.formData.expectedPrice ? {
-    E: common_vendor.t($options.formatPrice($data.formData.expectedPrice))
+    d: $options.selectedService
+  }, $options.selectedService ? common_vendor.e({
+    e: $data.reviews.length > 0
+  }, $data.reviews.length > 0 ? {
+    f: common_vendor.t($data.reviews.length)
   } : {}, {
-    F: common_vendor.t($options.canSubmit ? "提交预约" : "请完善必填信息"),
-    G: !$options.canSubmit,
-    H: common_vendor.o((...args) => $options.submitAppointment && $options.submitAppointment(...args))
+    g: $data.loadingReviews
+  }, $data.loadingReviews ? {} : $data.reviews.length === 0 ? {} : {
+    i: common_vendor.f($data.reviews, (review, index, i0) => {
+      return common_vendor.e({
+        a: common_vendor.t($options.getStars(review.rating)),
+        b: common_vendor.t(review.rating),
+        c: common_vendor.t($options.formatTime(review.createTime)),
+        d: common_vendor.t(review.content),
+        e: review.reply
+      }, review.reply ? {
+        f: common_vendor.t(review.reply)
+      } : {}, {
+        g: index
+      });
+    })
+  }, {
+    h: $data.reviews.length === 0
+  }) : {}, {
+    j: $data.formData.petName,
+    k: common_vendor.o(($event) => $data.formData.petName = $event.detail.value),
+    l: common_vendor.t($data.formData.hairType ? $options.getHairTypeLabel($data.formData.hairType) : "请选择毛发类型"),
+    m: !$data.formData.hairType ? 1 : "",
+    n: $data.hairTypes,
+    o: $data.hairTypeIndex,
+    p: common_vendor.o((...args) => $options.onHairTypeChange && $options.onHairTypeChange(...args)),
+    q: $data.formData.petBreed,
+    r: common_vendor.o(($event) => $data.formData.petBreed = $event.detail.value),
+    s: common_vendor.o((...args) => $options.calculatePrice && $options.calculatePrice(...args)),
+    t: $data.formData.petWeight,
+    v: common_vendor.o(($event) => $data.formData.petWeight = $event.detail.value),
+    w: common_vendor.t($data.formData.appointmentDate || "请选择日期"),
+    x: !$data.formData.appointmentDate ? 1 : "",
+    y: $data.formData.appointmentDate,
+    z: $options.minDate,
+    A: common_vendor.o((...args) => $options.onDateChange && $options.onDateChange(...args)),
+    B: common_vendor.t($data.formData.appointmentTime || "请选择时间"),
+    C: !$data.formData.appointmentTime ? 1 : "",
+    D: $data.formData.appointmentTime,
+    E: common_vendor.o((...args) => $options.onTimeChange && $options.onTimeChange(...args)),
+    F: $data.formData.contactPhone,
+    G: common_vendor.o(($event) => $data.formData.contactPhone = $event.detail.value),
+    H: $data.formData.remark,
+    I: common_vendor.o(($event) => $data.formData.remark = $event.detail.value),
+    J: $data.formData.expectedPrice
+  }, $data.formData.expectedPrice ? {
+    K: common_vendor.t($options.formatPrice($data.formData.expectedPrice))
+  } : {}, {
+    L: common_vendor.t($options.canSubmit ? "提交预约" : "请完善必填信息"),
+    M: !$options.canSubmit,
+    N: common_vendor.o((...args) => $options.submitAppointment && $options.submitAppointment(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-cb2df937"]]);

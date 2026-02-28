@@ -113,6 +113,10 @@ public class SecurityConfig
                     .requestMatchers("/bath/order/miniprogram/**").permitAll()
                     // 支付宝支付回调接口允许匿名访问
                     .requestMatchers("/bath/order/miniprogram/alipay/**").permitAll()
+                    // 小程序评价接口允许匿名访问
+                    .requestMatchers("/bath/review/miniprogram", "/bath/review/miniprogram/**").permitAll()
+                    // 通用上传接口允许匿名访问（小程序使用）
+                    .requestMatchers("/common/upload", "/common/uploads").permitAll()
                     // 静态资源，可匿名访问
                     .requestMatchers(HttpMethod.GET, "/", "/*.html", "/**.html", "/**.css", "/**.js", "/profile/**").permitAll()
                     .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/druid/**").permitAll()

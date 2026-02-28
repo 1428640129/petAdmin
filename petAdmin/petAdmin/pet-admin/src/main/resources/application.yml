@@ -142,3 +142,31 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+# Spug 短信配置
+spug:
+  sms:
+    enabled: true
+    # 验证码短信推送链接
+    url: https://push.spug.cc/send/gL1QGmW0k0jlRD65
+    # 预约成功通知短信推送链接（格式：?to=手机号&name=姓名）
+    appointment-url: https://push.spug.cc/sms/mgQqHKWxSgGDAZB4unpLIw
+    # 服务完成通知短信推送链接（格式：?to=手机号）
+    service-completed-url: https://push.spug.cc/sms/I767-Eg3T9CwDB7i-xrSsw
+
+# 阿里云短信配置（需要根据自己的账号实际填写）
+aliyun:
+  sms:
+    # 阿里云访问密钥
+    accessKeyId: your-access-key-id
+    accessKeySecret: your-access-key-secret
+    # 默认短信签名
+    signName: 宠浴管理系统
+    # 短信模板编码（在阿里云短信控制台中创建）
+    template-code:
+      # 登录/注册验证码模板，需包含 ${code} 变量
+      verify: SMS_000000001
+      # 预约确认通知模板，可包含 ${title}、${content}
+      appointment-confirmed: SMS_000000002
+      # 服务完成通知模板，可包含 ${title}、${content}
+      service-completed: SMS_000000003

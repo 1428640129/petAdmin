@@ -8,7 +8,6 @@ interface Props {
   model: {
     userId?: number;
     notificationType?: string;
-    isRead?: string;
   };
 }
 
@@ -23,8 +22,7 @@ const emit = defineEmits<{
 function handleReset() {
   emit('update:model', {
     userId: undefined,
-    notificationType: undefined,
-    isRead: undefined
+    notificationType: undefined
   });
   emit('reset');
 }
@@ -44,23 +42,8 @@ function handleSearch() {
         clearable
         style="width: 180px"
       >
-        <ElOption label="预约创建" value="appointment_created" />
-        <ElOption label="预约确认" value="appointment_confirmed" />
-        <ElOption label="服务开始" value="service_started" />
-        <ElOption label="服务完成" value="service_completed" />
-        <ElOption label="订单支付" value="order_paid" />
-      </ElSelect>
-    </ElFormItem>
-    <ElFormItem label="是否已读">
-      <ElSelect
-        :model-value="props.model.isRead"
-        @update:model-value="val => emit('update:model', { ...props.model, isRead: val })"
-        placeholder="请选择状态"
-        clearable
-        style="width: 120px"
-      >
-        <ElOption label="未读" value="0" />
-        <ElOption label="已读" value="1" />
+        <ElOption label="预约确认" value="1" />
+        <ElOption label="服务完成" value="3" />
       </ElSelect>
     </ElFormItem>
     <ElFormItem>

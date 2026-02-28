@@ -27,6 +27,7 @@ import com.pet.common.utils.poi.ExcelUtil;
 import com.pet.common.utils.SecurityUtils;
 import com.pet.system.domain.PetBathUser;
 import com.pet.business.service.IPetBathUserService;
+import com.pet.system.service.ISysConfigService;
 
 /**
  * 前台用户Controller
@@ -39,6 +40,9 @@ public class PetBathUserController extends BaseController
 {
     @Autowired
     private IPetBathUserService userService;
+
+    @Autowired
+    private ISysConfigService configService;
 
     @Autowired
     private ServerConfig serverConfig;
@@ -118,6 +122,8 @@ public class PetBathUserController extends BaseController
     @PostMapping("/register")
     public AjaxResult register(@RequestBody PetBathUser user)
     {
+        // 注册功能已默认开启，不再检查配置项
+        
         // 校验
         if (user.getUserName() == null || user.getUserName().trim().isEmpty())
         {

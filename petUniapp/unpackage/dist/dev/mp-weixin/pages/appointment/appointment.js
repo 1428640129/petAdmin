@@ -68,7 +68,7 @@ const _sfc_main = {
           throw new Error(((_a = res.data) == null ? void 0 : _a.msg) || "获取预约列表失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:196", "获取预约列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:209", "获取预约列表失败:", error);
         common_vendor.index.showToast({
           title: error.message || "获取预约列表失败",
           icon: "none"
@@ -185,7 +185,7 @@ const _sfc_main = {
           }
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:328", "查询订单状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:341", "查询订单状态失败:", error);
       }
     },
     // 批量检查订单状态
@@ -195,6 +195,44 @@ const _sfc_main = {
         return;
       const promises = confirmedAppointments.map((item) => this.checkOrderStatus(item));
       await Promise.all(promises);
+    },
+    // 检查是否已评价
+    async checkReviewStatus(item) {
+      try {
+        const app = getApp();
+        const baseUrl = app && app.globalData && app.globalData.baseUrl || "http://localhost:8080";
+        const token = common_vendor.index.getStorageSync("token");
+        const reviewRes = await common_vendor.index.request({
+          url: `${baseUrl}/bath/review/miniprogram/byAppointment/${item.appointmentId}`,
+          method: "GET",
+          header: {
+            "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        if (reviewRes.statusCode === 200 && reviewRes.data && reviewRes.data.code === 200) {
+          const review = reviewRes.data.data;
+          this.$set(item, "hasReview", review != null);
+          this.$forceUpdate();
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:380", "查询评价状态失败:", error);
+        this.$set(item, "hasReview", false);
+      }
+    },
+    // 批量检查评价状态
+    async batchCheckReviewStatus(appointments) {
+      const completedAppointments = appointments.filter((item) => item.status === "3");
+      if (completedAppointments.length === 0)
+        return;
+      const promises = completedAppointments.map((item) => this.checkReviewStatus(item));
+      await Promise.all(promises);
+    },
+    // 跳转到评价页面
+    goToReview(item) {
+      common_vendor.index.navigateTo({
+        url: `/pages/review/review?appointmentId=${item.appointmentId}&serviceId=${item.serviceId || ""}&serviceName=${encodeURIComponent(item.serviceName || "")}`
+      });
     },
     // 处理支付成功
     async handlePaymentSuccess(baseUrl, token, orderId, tradeNo, appointmentId) {
@@ -228,7 +266,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:378", "更新订单状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:437", "更新订单状态失败:", error);
         common_vendor.index.showToast({
           title: "支付成功，但更新订单状态失败",
           icon: "none"
@@ -237,7 +275,7 @@ const _sfc_main = {
     },
     // 处理支付失败
     handlePaymentFail(err) {
-      common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:387", "支付失败:", err);
+      common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:446", "支付失败:", err);
       if (err.errMsg && (err.errMsg.indexOf("cancel") !== -1 || err.errMsg.indexOf("取消") !== -1)) {
         common_vendor.index.showToast({
           title: "已取消支付",
@@ -307,7 +345,7 @@ const _sfc_main = {
             common_vendor.index.showLoading({
               title: "支付中..."
             });
-            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:498", "微信小程序：使用模拟支付（沙盒环境）");
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:557", "微信小程序：使用模拟支付（沙盒环境）");
             common_vendor.index.hideLoading();
             const confirmRes2 = await common_vendor.index.showModal({
               title: "模拟支付",
@@ -330,7 +368,7 @@ const _sfc_main = {
           throw new Error(((_b = orderRes.data) == null ? void 0 : _b.msg) || "查询订单失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:593", "支付失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:652", "支付失败:", error);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: error.message || "支付失败",
@@ -368,8 +406,14 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       }, item.status === "1" && !$options.isOrderPaid(item) ? {
         j: common_vendor.o(($event) => $options.handlePay(item), item.appointmentId)
       } : {}, {
-        k: item.appointmentId,
-        l: common_vendor.o(($event) => $options.viewDetail(item), item.appointmentId)
+        k: item.status === "3"
+      }, item.status === "3" ? common_vendor.e({
+        l: !item.hasReview
+      }, !item.hasReview ? {
+        m: common_vendor.o(($event) => $options.goToReview(item), item.appointmentId)
+      } : {}) : {}, {
+        n: item.appointmentId,
+        o: common_vendor.o(($event) => $options.viewDetail(item), item.appointmentId)
       });
     })
   }, {

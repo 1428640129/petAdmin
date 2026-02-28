@@ -36,6 +36,36 @@
 				</view>
 			</view>
 			
+			<!-- 用户评价（选中服务时显示） -->
+			<view v-if="selectedService" class="form-section review-section">
+				<view class="section-title">
+					<text>用户评价</text>
+					<text class="review-count" v-if="reviews.length > 0">({{ reviews.length }})</text>
+				</view>
+				<view v-if="loadingReviews" class="review-loading">
+					<text>加载评价中...</text>
+				</view>
+				<view v-else-if="reviews.length === 0" class="review-empty">
+					<text>暂无评价</text>
+				</view>
+				<view v-else class="review-list">
+					<view v-for="(review, index) in reviews" :key="index" class="review-item">
+						<view class="review-header">
+							<view class="review-rating">
+								<text class="rating-stars">{{ getStars(review.rating) }}</text>
+								<text class="rating-value">{{ review.rating }}分</text>
+							</view>
+							<text class="review-time">{{ formatTime(review.createTime) }}</text>
+						</view>
+						<text class="review-content">{{ review.content }}</text>
+						<view v-if="review.reply" class="review-reply">
+							<text class="reply-label">商家回复：</text>
+							<text class="reply-content">{{ review.reply }}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			
 			<!-- 宠物信息 -->
 			<view class="form-section">
 				<view class="section-title">
@@ -203,6 +233,9 @@
 				// 服务列表
 				services: [],
 				loading: false,
+				// 评价列表
+				reviews: [],
+				loadingReviews: false,
 				// 毛发类型选项（0=短毛,1=长毛）
 				hairTypes: [
 					{ value: '0', label: '短毛' },
@@ -314,6 +347,65 @@
 				this.formData.serviceId = service.id;
 				// 重新计算价格
 				this.calculatePrice();
+				// 加载该服务的评价
+				this.loadReviews(service.id);
+			},
+			// 加载评价列表
+			async loadReviews(serviceId) {
+				if (!serviceId) {
+					this.reviews = [];
+					return;
+				}
+				
+				this.loadingReviews = true;
+				try {
+					const app = getApp();
+					const baseUrl = (app && app.globalData && app.globalData.baseUrl) || 'http://localhost:8080';
+					
+					const res = await uni.request({
+						url: `${baseUrl}/bath/review/miniprogram/list`,
+						method: 'GET',
+						data: {
+							serviceId: serviceId,
+							pageNum: 1,
+							pageSize: 10
+						},
+						header: {
+							'Content-Type': 'application/json'
+						}
+					});
+					
+					if (res.statusCode === 200 && res.data && res.data.code === 200) {
+						this.reviews = res.data.rows || [];
+					} else {
+						this.reviews = [];
+					}
+				} catch (error) {
+					console.error('加载评价失败:', error);
+					this.reviews = [];
+				} finally {
+					this.loadingReviews = false;
+				}
+			},
+			// 获取星级显示
+			getStars(rating) {
+				if (!rating) return '☆☆☆☆☆';
+				const fullStars = '★'.repeat(rating);
+				const emptyStars = '☆'.repeat(5 - rating);
+				return fullStars + emptyStars;
+			},
+			// 格式化时间
+			formatTime(timeStr) {
+				if (!timeStr) return '';
+				try {
+					const date = new Date(timeStr);
+					const year = date.getFullYear();
+					const month = String(date.getMonth() + 1).padStart(2, '0');
+					const day = String(date.getDate()).padStart(2, '0');
+					return `${year}-${month}-${day}`;
+				} catch (e) {
+					return timeStr;
+				}
 			},
 			// 毛发类型改变
 			onHairTypeChange(e) {
@@ -598,7 +690,6 @@
 	
 	.service-intro-section {
 		background: linear-gradient(to bottom, #fff9f6, #ffffff);
-		border-left: 6rpx solid #ff6b35;
 	}
 	
 	.service-intro-content {
@@ -611,6 +702,97 @@
 		line-height: 1.6;
 		white-space: pre-wrap;
 		word-break: break-all;
+	}
+	
+	.review-section {
+		background: linear-gradient(to bottom, #fff9f6, #ffffff);
+	}
+	
+	.review-count {
+		font-size: 24rpx;
+		color: #999;
+		font-weight: normal;
+		margin-left: 10rpx;
+	}
+	
+	.review-loading,
+	.review-empty {
+		padding: 40rpx 0;
+		text-align: center;
+		font-size: 28rpx;
+		color: #999;
+	}
+	
+	.review-list {
+		display: flex;
+		flex-direction: column;
+		gap: 30rpx;
+	}
+	
+	.review-item {
+		padding: 20rpx 0;
+		border-bottom: 1rpx solid #f5f5f5;
+		
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+	
+	.review-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 15rpx;
+	}
+	
+	.review-rating {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+	}
+	
+	.rating-stars {
+		font-size: 28rpx;
+		color: #ffa500;
+		letter-spacing: 2rpx;
+	}
+	
+	.rating-value {
+		font-size: 24rpx;
+		color: #666;
+	}
+	
+	.review-time {
+		font-size: 24rpx;
+		color: #999;
+	}
+	
+	.review-content {
+		font-size: 28rpx;
+		color: #333;
+		line-height: 1.6;
+		word-break: break-all;
+	}
+	
+	.review-reply {
+		margin-top: 15rpx;
+		padding: 15rpx;
+		background-color: #f9f9f9;
+		border-radius: 8rpx;
+		border-left: 4rpx solid #ff6b35;
+	}
+	
+	.reply-label {
+		font-size: 24rpx;
+		color: #ff6b35;
+		font-weight: bold;
+		margin-right: 10rpx;
+	}
+	
+	.reply-content {
+		font-size: 26rpx;
+		color: #666;
+		line-height: 1.6;
 	}
 	
 	.form-item {
@@ -664,8 +846,18 @@
 		justify-content: space-between;
 		box-sizing: border-box;
 		
-		.placeholder {
-			color: #999;
+		text {
+			flex: 1;
+			font-size: 28rpx;
+			color: #333;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			margin-right: 20rpx;
+			
+			&.placeholder {
+				color: #999;
+			}
 		}
 	}
 	
@@ -673,6 +865,7 @@
 		color: #999;
 		font-size: 32rpx;
 		font-weight: bold;
+		flex-shrink: 0;
 	}
 	
 	.textarea {

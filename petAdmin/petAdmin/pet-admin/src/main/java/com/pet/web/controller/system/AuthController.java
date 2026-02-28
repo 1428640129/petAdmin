@@ -188,10 +188,7 @@ public class AuthController
     @PostMapping("/register")
     public AjaxResult register(@RequestBody Map<String, String> registerData)
     {
-        if (!("true".equals(configService.selectConfigByKey("sys.account.registerUser"))))
-        {
-            return AjaxResult.error("当前系统没有开启注册功能！");
-        }
+        // 注册功能已默认开启，不再检查配置项
         
         String phone = registerData.get("phone");
         String code = registerData.get("code");

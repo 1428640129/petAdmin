@@ -66,7 +66,7 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
       )
     },
     { prop: 'content', label: '评论内容', minWidth: 200 },
-    { prop: 'replyContent', label: '商家回复', minWidth: 200 },
+    { prop: 'serviceName', label: '相关联服务名称', minWidth: 150 },
     { prop: 'createTime', label: '评价时间', width: 180 },
     {
       prop: 'status',
@@ -92,11 +92,6 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
       width: 180,
       formatter: row => (
         <div class="flex-center">
-          {!row.replyContent && (
-            <ElButton type="primary" plain size="small" onClick={() => handleReply(row.reviewId)}>
-              回复
-            </ElButton>
-          )}
           <ElPopconfirm title={$t('common.confirmDelete')} onConfirm={() => handleDelete(row.reviewId)}>
             {{
               reference: () => (

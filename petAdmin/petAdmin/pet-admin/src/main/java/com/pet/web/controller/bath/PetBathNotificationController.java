@@ -35,6 +35,7 @@ public class PetBathNotificationController extends BaseController
 
     /**
      * 查询通知记录列表
+     * 默认只显示预约确认和服务完成两种类型的通知
      */
     @PreAuthorize("@ss.hasPermi('bath:notification:list')")
     @GetMapping("/list")

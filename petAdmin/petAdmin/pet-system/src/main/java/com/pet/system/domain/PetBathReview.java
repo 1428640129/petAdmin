@@ -37,6 +37,9 @@ public class PetBathReview extends BaseEntity
     @Excel(name = "服务ID", cellType = ColumnType.NUMERIC)
     private Long serviceId;
 
+    /** 服务名称（关联查询字段，不存储到数据库） */
+    private String serviceName;
+
     /** 评分（1-5星） */
     @Excel(name = "评分", cellType = ColumnType.NUMERIC)
     private Integer rating;
@@ -109,6 +112,16 @@ public class PetBathReview extends BaseEntity
     public void setServiceId(Long serviceId)
     {
         this.serviceId = serviceId;
+    }
+
+    public String getServiceName()
+    {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName)
+    {
+        this.serviceName = serviceName;
     }
 
     public Integer getRating()

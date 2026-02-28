@@ -100,6 +100,17 @@
 						<view v-if="item.status === '1' && !isOrderPaid(item)" class="action-buttons">
 							<button class="pay-btn" @click.stop="handlePay(item)">立即支付</button>
 						</view>
+						<!-- 已完成状态显示评价按钮 -->
+						<view v-if="item.status === '3'" class="action-buttons">
+							<button 
+								v-if="!item.hasReview" 
+								class="review-btn" 
+								@click.stop="goToReview(item)"
+							>
+								去评价
+							</button>
+							<text v-else class="reviewed-text">已评价</text>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -184,11 +195,13 @@
 							this.appointmentList = this.appointmentList.concat(rows);
 						}
 						
-						// 批量查询订单状态（仅对已确认状态的预约）
-						this.batchCheckOrderStatus(rows);
-						
-						// 判断是否还有更多数据
-						this.hasMore = this.appointmentList.length < total;
+					// 批量查询订单状态（仅对已确认状态的预约）
+					this.batchCheckOrderStatus(rows);
+					
+					// 注意：评价状态（hasReview）已由后端直接返回，无需前端再次查询
+					
+					// 判断是否还有更多数据
+					this.hasMore = this.appointmentList.length < total;
 					} else {
 						throw new Error(res.data?.msg || '获取预约列表失败');
 					}
@@ -338,6 +351,52 @@
 				// 并发查询所有订单状态
 				const promises = confirmedAppointments.map(item => this.checkOrderStatus(item));
 				await Promise.all(promises);
+			},
+			// 检查是否已评价
+			async checkReviewStatus(item) {
+				try {
+					const app = getApp();
+					const baseUrl = (app && app.globalData && app.globalData.baseUrl) || 'http://localhost:8080';
+					const token = uni.getStorageSync('token');
+					
+					// 查询评价信息
+					const reviewRes = await uni.request({
+						url: `${baseUrl}/bath/review/miniprogram/byAppointment/${item.appointmentId}`,
+						method: 'GET',
+						header: {
+							'Content-Type': 'application/json',
+							'Authorization': token ? `Bearer ${token}` : ''
+						}
+					});
+					
+					if (reviewRes.statusCode === 200 && reviewRes.data && reviewRes.data.code === 200) {
+						const review = reviewRes.data.data;
+						// 设置是否已评价标记
+						this.$set(item, 'hasReview', review != null);
+						// 强制更新视图
+						this.$forceUpdate();
+					}
+				} catch (error) {
+					console.error('查询评价状态失败:', error);
+					// 查询失败时，默认未评价
+					this.$set(item, 'hasReview', false);
+				}
+			},
+			// 批量检查评价状态
+			async batchCheckReviewStatus(appointments) {
+				// 只查询已完成状态的预约
+				const completedAppointments = appointments.filter(item => item.status === '3');
+				if (completedAppointments.length === 0) return;
+				
+				// 并发查询所有评价状态
+				const promises = completedAppointments.map(item => this.checkReviewStatus(item));
+				await Promise.all(promises);
+			},
+			// 跳转到评价页面
+			goToReview(item) {
+				uni.navigateTo({
+					url: `/pages/review/review?appointmentId=${item.appointmentId}&serviceId=${item.serviceId || ''}&serviceName=${encodeURIComponent(item.serviceName || '')}`
+				});
 			},
 			// 处理支付成功
 			async handlePaymentSuccess(baseUrl, token, orderId, tradeNo, appointmentId) {
@@ -804,6 +863,26 @@
 	
 	.pay-btn::after {
 		border: none;
+	}
+	
+	.review-btn {
+		background: linear-gradient(to right, #4CAF50, #45a049);
+		color: #ffffff;
+		border: none;
+		border-radius: 40rpx;
+		padding: 12rpx 40rpx;
+		font-size: 26rpx;
+		font-weight: bold;
+	}
+	
+	.review-btn::after {
+		border: none;
+	}
+	
+	.reviewed-text {
+		color: #999;
+		font-size: 26rpx;
+		padding: 12rpx 40rpx;
 	}
 	
 	.load-more {

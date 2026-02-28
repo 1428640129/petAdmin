@@ -10,6 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="appointmentId"      column="appointment_id"      />
         <result property="userId"             column="user_id"              />
         <result property="serviceId"          column="service_id"          />
+        <result property="serviceName"       column="service_name"         />
         <result property="rating"             column="rating"               />
         <result property="content"            column="content"             />
         <result property="images"             column="images"               />
@@ -21,42 +22,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
     
     <sql id="selectBathReviewVo">
-        select review_id, order_id, appointment_id, user_id, service_id, rating, content, images, 
-               reply_content, reply_time, status, create_time, update_time 
-        from pet_bath_review
+        select r.review_id, r.order_id, r.appointment_id, r.user_id, r.service_id, r.rating, r.content, r.images, 
+               r.reply_content, r.reply_time, r.status, r.create_time, r.update_time,
+               s.service_name
+        from pet_bath_review r
+        left join pet_bath_service s on r.service_id = s.service_id
     </sql>
     
     <select id="selectBathReviewList" parameterType="com.pet.system.domain.PetBathReview" resultMap="PetBathReviewResult">
         <include refid="selectBathReviewVo"/>
         <where>
             <if test="orderId != null">
-                AND order_id = #{orderId}
+                AND r.order_id = #{orderId}
             </if>
             <if test="userId != null">
-                AND user_id = #{userId}
+                AND r.user_id = #{userId}
             </if>
             <if test="serviceId != null">
-                AND service_id = #{serviceId}
+                AND r.service_id = #{serviceId}
             </if>
             <if test="rating != null">
-                AND rating = #{rating}
+                AND r.rating = #{rating}
             </if>
             <if test="status != null and status != ''">
-                AND status = #{status}
+                AND r.status = #{status}
             </if>
             <if test="params.beginTime != null and params.beginTime != ''">
-                AND date_format(create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+                AND date_format(r.create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
             </if>
             <if test="params.endTime != null and params.endTime != ''">
-                AND date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+                AND date_format(r.create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
             </if>
         </where>
-        order by create_time desc
+        order by r.create_time desc
     </select>
     
     <select id="selectBathReviewById" parameterType="Long" resultMap="PetBathReviewResult">
         <include refid="selectBathReviewVo"/>
-        where review_id = #{reviewId}
+        where r.review_id = #{reviewId}
     </select>
     
     <insert id="insertBathReview" parameterType="com.pet.system.domain.PetBathReview" useGeneratedKeys="true" keyProperty="reviewId">

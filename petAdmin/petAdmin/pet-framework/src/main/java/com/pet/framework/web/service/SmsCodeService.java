@@ -2,12 +2,15 @@ package com.pet.framework.web.service;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import com.pet.common.constant.CacheConstants;
 import com.pet.common.core.redis.RedisCache;
 import com.pet.common.exception.ServiceException;
 import com.pet.common.utils.StringUtils;
+import com.pet.framework.sms.SpugSmsClient;
 
 /**
  * 短信验证码服务
@@ -20,10 +23,13 @@ public class SmsCodeService
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private SpugSmsClient spugSmsClient;
+
     /**
      * 短信验证码有效期（分钟）
      */
-    private static final Integer SMS_CODE_EXPIRATION = 5;
+    private static final Integer SMS_CODE_EXPIRATION = 10;
 
     /**
      * 发送短信验证码
@@ -61,9 +67,16 @@ public class SmsCodeService
         // 设置60秒的发送频率限制
         redisCache.setCacheObject(rateLimitKey, "1", 60, TimeUnit.SECONDS);
 
-        // TODO: 这里应该调用实际的短信服务发送验证码
-        // 目前仅打印到控制台，实际项目中需要集成短信服务商（如阿里云、腾讯云等）
-        System.out.println("【宠浴管理系统】验证码：" + code + "，有效期5分钟，请勿泄露。");
+        // 通过 Spug 短信服务发送验证码
+        // Spug 后台模板格式：您的验证码是${code}，十分钟内有效，如非本人操作请忽略。
+        // 只需要传递验证码，Spug 会自动用模板格式化
+        boolean success = spugSmsClient.sendVerifyCodeSms(phone, code);
+
+        if (!success)
+        {
+            // 如果短信发送失败，可以选择抛出异常或仅记录日志
+            throw new ServiceException("验证码发送失败，请稍后重试");
+        }
 
         return code;
     }

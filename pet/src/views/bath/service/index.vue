@@ -61,7 +61,19 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
     { prop: 'selection', type: 'selection', width: 48 },
     { prop: 'index', type: 'index', label: $t('common.index'), width: 64 },
     { prop: 'serviceName', label: '服务名称', minWidth: 150 },
-    { prop: 'serviceType', label: '服务类型', width: 120 },
+    {
+      prop: 'serviceType',
+      label: '服务类型',
+      width: 120,
+      formatter: (row: Api.Bath.Service) => {
+        const typeMap: Record<string, string> = {
+          '0': '基础洗浴',
+          '1': '深度护理',
+          '2': '豪华套餐'
+        };
+        return typeMap[row.serviceType || ''] || row.serviceType || '-';
+      }
+    },
     { prop: 'serviceDesc', label: '服务描述', minWidth: 200 },
     { prop: 'duration', label: '服务时长(分钟)', width: 120 },
     {

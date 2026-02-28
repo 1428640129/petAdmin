@@ -74,6 +74,12 @@
 			}
 		},
 		{
+			"path": "pages/review/review",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/profile/profile",
 			"style": {
 				"navigationBarTitleText": "个人信息",

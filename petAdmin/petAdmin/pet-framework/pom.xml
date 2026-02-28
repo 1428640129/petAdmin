@@ -59,6 +59,18 @@
             <artifactId>pet-system</artifactId>
         </dependency>
 
+        <!-- 阿里云短信 SDK（如版本不匹配可根据官方文档调整） -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>dysmsapi20170525</artifactId>
+            <version>2.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>tea-openapi</artifactId>
+            <version>0.2.8</version>
+        </dependency>
+
     </dependencies>
 
 </project>

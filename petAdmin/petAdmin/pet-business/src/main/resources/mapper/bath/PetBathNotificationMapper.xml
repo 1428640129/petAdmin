@@ -59,22 +59,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertBathNotification" parameterType="com.pet.system.domain.PetBathNotification" useGeneratedKeys="true" keyProperty="notificationId">
         insert into pet_bath_notification
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="userId != null">user_id,</if>
+            user_id,
             <if test="appointmentId != null">appointment_id,</if>
             <if test="orderId != null">order_id,</if>
-            <if test="notificationType != null and notificationType != ''">notification_type,</if>
-            <if test="title != null and title != ''">title,</if>
+            notification_type,
+            title,
             <if test="content != null">content,</if>
             <if test="isRead != null">is_read,</if>
             <if test="readTime != null">read_time,</if>
             create_time
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="userId != null">#{userId},</if>
+            #{userId},
             <if test="appointmentId != null">#{appointmentId},</if>
             <if test="orderId != null">#{orderId},</if>
-            <if test="notificationType != null and notificationType != ''">#{notificationType},</if>
-            <if test="title != null and title != ''">#{title},</if>
+            #{notificationType},
+            #{title},
             <if test="content != null">#{content},</if>
             <if test="isRead != null">#{isRead},</if>
             <if test="readTime != null">#{readTime},</if>

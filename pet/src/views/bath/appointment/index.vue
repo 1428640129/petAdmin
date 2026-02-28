@@ -60,6 +60,21 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
     { prop: 'petName', label: '宠物名称', width: 120 },
     { prop: 'serviceName', label: '服务名称', minWidth: 150 },
     {
+      prop: 'contactPhone',
+      label: '联系电话',
+      width: 130,
+      formatter: row => {
+        // 从备注中提取联系电话
+        if (row.remark) {
+          const phoneMatch = row.remark.match(/联系电话[：:]\s*(\d{11})/);
+          if (phoneMatch && phoneMatch[1]) {
+            return phoneMatch[1];
+          }
+        }
+        return '-';
+      }
+    },
+    {
       prop: 'appointmentTime',
       label: '预约时间',
       width: 180,

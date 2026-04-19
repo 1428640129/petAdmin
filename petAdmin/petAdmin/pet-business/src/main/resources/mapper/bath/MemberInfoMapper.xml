@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.MemberInfoMapper">
+    
+    <resultMap type="com.pet.system.domain.MemberInfo" id="MemberInfoResult">
+        <id     property="memberId"         column="member_id"         />
+        <result property="userId"           column="user_id"           />
+        <result property="memberLevel"      column="member_level"     />
+        <result property="points"            column="points"           />
+        <result property="totalConsumption"  column="total_consumption"/>
+        <result property="memberSince"      column="member_since"      />
+        <result property="expireTime"        column="expire_time"      />
+        <result property="status"            column="status"          />
+        <result property="createBy"          column="create_by"        />
+        <result property="createTime"        column="create_time"     />
+        <result property="updateBy"         column="update_by"        />
+        <result property="updateTime"       column="update_time"      />
+        <result property="remark"           column="remark"           />
+    </resultMap>
+    
+    <sql id="selectMemberInfoVo">
+        select member_id, user_id, member_level, points, total_consumption, member_since, 
+               expire_time, status, create_by, create_time, update_by, update_time, remark 
+        from member_info
+    </sql>
+    
+    <select id="selectMemberInfoList" parameterType="com.pet.system.domain.MemberInfo" resultMap="MemberInfoResult">
+        <include refid="selectMemberInfoVo"/>
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="memberLevel != null and memberLevel != ''">
+                AND member_level = #{memberLevel}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        order by member_id desc
+    </select>
+    
+    <select id="selectMemberInfoById" parameterType="Long" resultMap="MemberInfoResult">
+        <include refid="selectMemberInfoVo"/>
+        where member_id = #{memberId}
+    </select>
+    
+    <select id="selectMemberInfoByUserId" parameterType="Long" resultMap="MemberInfoResult">
+        <include refid="selectMemberInfoVo"/>
+        where user_id = #{userId}
+    </select>
+    
+    <insert id="insertMemberInfo" parameterType="com.pet.system.domain.MemberInfo" useGeneratedKeys="true" keyProperty="memberId">
+        insert into member_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="memberLevel != null">member_level,</if>
+            <if test="points != null">points,</if>
+            <if test="totalConsumption != null">total_consumption,</if>
+            <if test="memberSince != null">member_since,</if>
+            <if test="expireTime != null">expire_time,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="memberLevel != null">#{memberLevel},</if>
+            <if test="points != null">#{points},</if>
+            <if test="totalConsumption != null">#{totalConsumption},</if>
+            <if test="memberSince != null">#{memberSince},</if>
+            <if test="expireTime != null">#{expireTime},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <update id="updateMemberInfo" parameterType="com.pet.system.domain.MemberInfo">
+        update member_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="memberLevel != null">member_level = #{memberLevel},</if>
+            <if test="points != null">points = #{points},</if>
+            <if test="totalConsumption != null">total_consumption = #{totalConsumption},</if>
+            <if test="memberSince != null">member_since = #{memberSince},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where member_id = #{memberId}
+    </update>
+    
+    <delete id="deleteMemberInfoById" parameterType="Long">
+        delete from member_info where member_id = #{memberId}
+    </delete>
+    
+    <delete id="deleteMemberInfoByIds" parameterType="Long">
+        delete from member_info where member_id in 
+        <foreach item="memberId" collection="array" open="(" separator="," close=")">
+            #{memberId}
+        </foreach>
+    </delete>
+    
+</mapper>
+
+
+
+
+

@@ -54,6 +54,20 @@ const _sfc_main = {
     }
   },
   onLoad(options) {
+    const token = common_vendor.index.getStorageSync("token");
+    const userId = common_vendor.index.getStorageSync("userId");
+    if (!token || !userId) {
+      common_vendor.index.showToast({
+        title: "请先登录",
+        icon: "none"
+      });
+      setTimeout(() => {
+        common_vendor.index.navigateTo({
+          url: "/pages/login/login"
+        });
+      }, 1500);
+      return;
+    }
     if (options.serviceId) {
       this.preSelectedServiceId = parseInt(options.serviceId);
     }
@@ -109,7 +123,7 @@ const _sfc_main = {
           throw new Error(((_a = res.data) == null ? void 0 : _a.msg) || "获取服务列表失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/service/service.vue:336", "获取服务列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:351", "获取服务列表失败:", error);
         common_vendor.index.showToast({
           title: error.message || "获取服务列表失败",
           icon: "none"
@@ -152,7 +166,7 @@ const _sfc_main = {
           this.reviews = [];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/service/service.vue:384", "加载评价失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:399", "加载评价失败:", error);
         this.reviews = [];
       } finally {
         this.loadingReviews = false;
@@ -230,7 +244,7 @@ const _sfc_main = {
           this.formData.expectedPrice = res.data.data || null;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/service/service.vue:466", "计算价格失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:481", "计算价格失败:", error);
       }
     },
     // 格式化价格
@@ -242,6 +256,20 @@ const _sfc_main = {
     // 提交预约
     async submitAppointment() {
       var _a;
+      const token = common_vendor.index.getStorageSync("token");
+      const userId = common_vendor.index.getStorageSync("userId");
+      if (!token || !userId) {
+        common_vendor.index.showToast({
+          title: "请先登录",
+          icon: "none"
+        });
+        setTimeout(() => {
+          common_vendor.index.navigateTo({
+            url: "/pages/login/login"
+          });
+        }, 1500);
+        return;
+      }
       if (!this.canSubmit) {
         common_vendor.index.showToast({
           title: "请完善必填信息",
@@ -297,14 +325,14 @@ const _sfc_main = {
       try {
         const app = getApp();
         const baseUrl = app && app.globalData && app.globalData.baseUrl || "http://localhost:8080";
-        const token = common_vendor.index.getStorageSync("token");
+        const token2 = common_vendor.index.getStorageSync("token");
         const res = await common_vendor.index.request({
           url: `${baseUrl}/bath/appointment/miniprogram`,
           method: "POST",
           data: submitData,
           header: {
             "Content-Type": "application/json",
-            "Authorization": token ? `Bearer ${token}` : ""
+            "Authorization": token2 ? `Bearer ${token2}` : ""
           }
         });
         common_vendor.index.hideLoading();
@@ -323,7 +351,7 @@ const _sfc_main = {
         }
       } catch (error) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/service/service.vue:575", "提交预约失败:", error);
+        common_vendor.index.__f__("error", "at pages/service/service.vue:605", "提交预约失败:", error);
         common_vendor.index.showToast({
           title: error.message || "预约失败",
           icon: "none"

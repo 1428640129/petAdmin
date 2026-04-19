@@ -1,6 +1,18 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { ElButton, ElPopconfirm, ElTag, ElMessage, ElCard, ElTable, ElTableColumn, ElPagination, ElRate } from 'element-plus';
+import {
+  ElButton,
+  ElPopconfirm,
+  ElTag,
+  ElMessage,
+  ElMessageBox,
+  ElCard,
+  ElTable,
+  ElTableColumn,
+  ElPagination,
+  ElRate,
+  ElImage
+} from 'element-plus';
 import TableHeaderOperation from '@/components/advanced/table-header-operation.vue';
 import { fetchGetBathReviewList, fetchDeleteBathReview, fetchReplyReview } from '@/service/api/bath';
 import { useTableOperate, useUIPaginatedTable } from '@/hooks/common/table';
@@ -66,6 +78,58 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
       )
     },
     { prop: 'content', label: '评论内容', minWidth: 200 },
+    {
+      prop: 'replyContent',
+      label: '商家回复',
+      minWidth: 160,
+      showOverflowTooltip: true,
+      formatter: row => row.replyContent || '—'
+    },
+    { prop: 'replyTime', label: '回复时间', width: 180 },
+    {
+      prop: 'images',
+      label: '评价图片',
+      align: 'center',
+      width: 180,
+      formatter: row => {
+        if (!row.images || row.images.trim() === '') {
+          return <span style="color: #999;">无图片</span>;
+        }
+        // 解析图片URL（可能是逗号分隔的字符串）
+        const imageUrls = row.images.split(',').filter((url: string) => url.trim() !== '');
+        if (imageUrls.length === 0) {
+          return <span style="color: #999;">无图片</span>;
+        }
+        // 处理图片URL：如果是相对路径，拼接基础URL
+        const baseURL = import.meta.env.VITE_SERVICE_BASE_URL || '';
+        const processedUrls = imageUrls.map((url: string) => {
+          const trimmedUrl = url.trim();
+          if (trimmedUrl.startsWith('/') && !trimmedUrl.startsWith('http')) {
+            return baseURL + trimmedUrl;
+          }
+          return trimmedUrl;
+        });
+        // 显示前3张图片作为缩略图，点击可预览
+        return (
+          <div class="flex-center gap-8px flex-wrap">
+            {processedUrls.slice(0, 3).map((url: string, index: number) => (
+              <ElImage
+                key={index}
+                src={url}
+                preview-src-list={processedUrls}
+                style="width: 50px; height: 50px; border-radius: 4px; cursor: pointer;"
+                fit="cover"
+                preview-teleported
+                lazy
+              />
+            ))}
+            {processedUrls.length > 3 && (
+              <span style="color: #999; font-size: 12px;">+{processedUrls.length - 3}</span>
+            )}
+          </div>
+        );
+      }
+    },
     { prop: 'serviceName', label: '相关联服务名称', minWidth: 150 },
     { prop: 'createTime', label: '评价时间', width: 180 },
     {
@@ -89,9 +153,12 @@ const { columns, columnChecks, data, getData, loading, mobilePagination } = useU
       prop: 'operate',
       label: $t('common.operate'),
       align: 'center',
-      width: 180,
+      width: 220,
       formatter: row => (
-        <div class="flex-center">
+        <div class="flex-center gap-8px">
+          <ElButton type="primary" plain size="small" onClick={() => handleReply(row)}>
+            回复
+          </ElButton>
           <ElPopconfirm title={$t('common.confirmDelete')} onConfirm={() => handleDelete(row.reviewId)}>
             {{
               reference: () => (
@@ -125,15 +192,28 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleReply(id: number) {
-  const replyContent = prompt('请输入回复内容：');
-  if (replyContent) {
-    try {
-      await fetchReplyReview(id, replyContent);
-      ElMessage.success('回复成功');
-      getData();
-    } catch (error) {
-      console.error(error);
+async function handleReply(row: Api.Bath.Review) {
+  const reviewId = row.reviewId;
+  if (reviewId === undefined || reviewId === null) return;
+  try {
+    const { value } = await ElMessageBox.prompt('请输入对用户的回复内容', '回复评价', {
+      confirmButtonText: '提交',
+      cancelButtonText: '取消',
+      inputType: 'textarea',
+      inputValue: row.replyContent ?? '',
+      inputPlaceholder: '商家回复将展示给用户',
+      inputValidator: val => {
+        if (!val || !String(val).trim()) return '请输入回复内容';
+        return true;
+      }
+    });
+    await fetchReplyReview(reviewId, String(value).trim());
+    ElMessage.success('回复成功');
+    getData();
+  } catch (e) {
+    if (e !== 'cancel') {
+      console.error(e);
+      ElMessage.error('回复失败');
     }
   }
 }
@@ -173,6 +253,7 @@ function handleSelectionChange(selection: Api.Bath.Review[]) {
         <div class="flex items-center justify-right">
           <TableHeaderOperation
             v-model:columns="columnChecks"
+            :show-add="false"
             :disabled-delete="checkedRowKeys.length === 0"
             :loading="loading"
             @delete="handleBatchDelete"

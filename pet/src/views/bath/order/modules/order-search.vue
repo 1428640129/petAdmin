@@ -53,12 +53,12 @@ function handleSearch() {
         clearable
         style="width: 150px"
       >
-        <ElOption label="待支付" value="unpaid" />
-        <ElOption label="已支付" value="paid" />
-        <ElOption label="服务中" value="in_service" />
-        <ElOption label="已完成" value="completed" />
-        <ElOption label="已退款" value="refunded" />
-        <ElOption label="已取消" value="cancelled" />
+        <ElOption label="待支付" value="0" />
+        <ElOption label="已支付" value="1" />
+        <ElOption label="服务中" value="2" />
+        <ElOption label="已完成" value="3" />
+        <ElOption label="已退款" value="4" />
+        <ElOption label="已取消" value="5" />
       </ElSelect>
     </ElFormItem>
     <ElFormItem>

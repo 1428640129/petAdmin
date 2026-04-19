@@ -83,11 +83,13 @@ declare namespace Api.Bath {
         appointmentId?: number;
         userId: number;
         serviceId: number;
+        serviceName?: string;
         rating: number;
         content?: string;
         images?: string;
         replyContent?: string;
         replyTime?: string;
+        createTime?: string;
         status?: string;
     }
 
@@ -102,6 +104,48 @@ declare namespace Api.Bath {
         content?: string;
         isRead?: string;
         readTime?: string;
+    }
+
+    /** 宠物档案 */
+    interface PetProfile {
+        petId?: number;
+        userId: number;
+        petName: string;
+        petBreed?: string;
+        petAge?: number;
+        petSex?: string;
+        petWeight?: number;
+        hairType?: string;
+        petPhoto?: string;
+        healthStatus?: string;
+        specialNeeds?: string;
+        allergyHistory?: string;
+        isDefault?: string;
+        remark?: string;
+    }
+
+    /** 会员信息 */
+    interface MemberInfo {
+        memberId?: number;
+        userId: number;
+        memberLevel?: string;
+        points?: number;
+        totalConsumption?: number;
+        memberSince?: string;
+        expireTime?: string;
+        status?: string;
+        remark?: string;
+    }
+
+    /** 积分记录 */
+    interface PointsRecord {
+        recordId?: number;
+        userId: number;
+        points: number;
+        pointsType?: string;
+        orderId?: number;
+        remark?: string;
+        createTime?: string;
     }
 }
 

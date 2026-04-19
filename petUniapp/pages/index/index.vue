@@ -6,6 +6,15 @@
 </view>
 <!-- 主内容区域 -->
 <scroll-view class="main-content" scroll-y="true">
+<!-- 首页描述文字 -->
+<view class="home-desc-card">
+	<view class="desc-header">
+		<text class="desc-title">欢迎使用宠物洗澡预约系统</text>
+	</view>
+	<view class="desc-content">
+		<text class="desc-text">在这里，您可以轻松预约专业的宠物洗澡服务，查看服务详情，管理您的预约订单，并对服务进行评价。我们致力于为您的爱宠提供最优质的服务体验。</text>
+	</view>
+</view>
 <!-- 轮播图区域 -->
 <view class="carousel-container" v-if="carouselList.length > 0">
 <swiper class="carousel-swiper" :indicator-dots="true" indicator-color="#f5f5f5" indicator-active-color="#ff6b35" :autoplay="true" :interval="3000" :duration="500">
@@ -404,5 +413,32 @@ text-align: center;
 padding: 40rpx;
 color: #999;
 font-size: 28rpx;
+}
+.home-desc-card {
+background-color: #fffaf0;
+border-radius: 20rpx;
+padding: 30rpx;
+margin-bottom: 30rpx;
+border: 2rpx solid #d2b48c;
+box-shadow: 0 4rpx 12rpx rgba(210, 180, 140, 0.2);
+}
+.desc-header {
+text-align: center;
+margin-bottom: 20rpx;
+}
+.desc-title {
+font-size: 34rpx;
+color: #ff6b35;
+font-weight: bold;
+display: block;
+}
+.desc-content {
+text-align: left;
+}
+.desc-text {
+font-size: 26rpx;
+color: #663300;
+line-height: 40rpx;
+display: block;
 }
 </style>

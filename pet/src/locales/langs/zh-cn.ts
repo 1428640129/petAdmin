@@ -427,6 +427,7 @@ const local: App.I18n.Schema = {
         userStatus: '用户状态',
         userRole: '用户角色',
         form: {
+          password: '登录密码',
           userName: '请输入用户名',
           userGender: '请选择性别',
           nickName: '请输入昵称',

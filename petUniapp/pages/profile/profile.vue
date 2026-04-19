@@ -1,5 +1,14 @@
 <template>
 	<view class="container">
+		<!-- 个人信息描述 -->
+		<view class="profile-desc-card">
+			<view class="desc-header">
+				<text class="desc-title">个人信息管理</text>
+			</view>
+			<view class="desc-content">
+				<text class="desc-text">在这里您可以完善和修改您的个人信息，包括头像、昵称、手机号等。准确的信息有助于我们为您提供更好的服务体验，也方便我们及时与您联系。请确保信息的真实性和有效性。</text>
+			</view>
+		</view>
 		<view class="form-card">
 			<view class="form-item">
 				<text class="label">头像</text>
@@ -229,6 +238,33 @@
 }
 .save-btn[disabled] {
 	opacity: 0.6;
+}
+.profile-desc-card {
+	background-color: #fffaf0;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	margin-bottom: 30rpx;
+	border: 2rpx solid #d2b48c;
+	box-shadow: 0 4rpx 12rpx rgba(210, 180, 140, 0.2);
+}
+.desc-header {
+	text-align: center;
+	margin-bottom: 20rpx;
+}
+.desc-title {
+	font-size: 32rpx;
+	color: #ff6b35;
+	font-weight: bold;
+	display: block;
+}
+.desc-content {
+	text-align: left;
+}
+.desc-text {
+	font-size: 26rpx;
+	color: #663300;
+	line-height: 40rpx;
+	display: block;
 }
 </style>
 

@@ -424,6 +424,7 @@ const local: App.I18n.Schema = {
         userStatus: 'User Status',
         userRole: 'User Role',
         form: {
+          password: 'Login password',
           userName: 'Please enter user name',
           userGender: 'Please select gender',
           nickName: 'Please enter nick name',

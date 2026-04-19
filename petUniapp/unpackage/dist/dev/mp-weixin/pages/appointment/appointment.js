@@ -15,7 +15,26 @@ const _sfc_main = {
     };
   },
   onLoad() {
+    const token = common_vendor.index.getStorageSync("token");
+    const userId = common_vendor.index.getStorageSync("userId");
+    if (!token || !userId) {
+      common_vendor.index.showToast({
+        title: "请先登录",
+        icon: "none"
+      });
+      setTimeout(() => {
+        common_vendor.index.navigateTo({
+          url: "/pages/login/login"
+        });
+      }, 1500);
+      return;
+    }
     this.loadAppointmentList();
+  },
+  onShow() {
+    if (this.appointmentList.length > 0) {
+      this.onRefresh();
+    }
   },
   onPullDownRefresh() {
     this.onRefresh();
@@ -29,7 +48,7 @@ const _sfc_main = {
       this.loadAppointmentList();
     },
     async loadAppointmentList() {
-      var _a;
+      var _a, _b;
       if (this.loading)
         return;
       this.loading = true;
@@ -37,6 +56,18 @@ const _sfc_main = {
         const app = getApp();
         const baseUrl = app && app.globalData && app.globalData.baseUrl || "http://localhost:8080";
         const token = common_vendor.index.getStorageSync("token");
+        if (!token) {
+          common_vendor.index.showToast({
+            title: "请先登录",
+            icon: "none"
+          });
+          setTimeout(() => {
+            common_vendor.index.navigateTo({
+              url: "/pages/login/login"
+            });
+          }, 1500);
+          return;
+        }
         const params = {
           pageNum: this.currentPage,
           pageSize: this.pageSize
@@ -44,6 +75,7 @@ const _sfc_main = {
         if (this.activeTab !== "all") {
           params.status = this.activeTab;
         }
+        common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:214", "请求预约列表，token:", token ? token.substring(0, 20) + "..." : "null");
         const res = await common_vendor.index.request({
           url: `${baseUrl}/bath/appointment/miniprogram/list`,
           method: "GET",
@@ -53,22 +85,48 @@ const _sfc_main = {
             "Authorization": token ? `Bearer ${token}` : ""
           }
         });
-        if (res.statusCode === 200 && res.data && res.data.code === 200) {
-          const data = res.data.data || res.data;
-          const rows = data.rows || data.list || [];
-          const total = data.total || 0;
-          if (this.currentPage === 1) {
-            this.appointmentList = rows;
-          } else {
-            this.appointmentList = this.appointmentList.concat(rows);
+        common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:226", "预约列表响应:", JSON.stringify(res, null, 2));
+        if (res.statusCode === 200 && res.data) {
+          if (res.data.code === 401) {
+            common_vendor.index.showToast({
+              title: res.data.msg || "请先登录",
+              icon: "none"
+            });
+            setTimeout(() => {
+              common_vendor.index.navigateTo({
+                url: "/pages/login/login"
+              });
+            }, 1500);
+            return;
           }
-          this.batchCheckOrderStatus(rows);
-          this.hasMore = this.appointmentList.length < total;
+          if (res.data.code === 200) {
+            const rows = res.data.rows || res.data.list || [];
+            const total = res.data.total || 0;
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:250", "解析到的rows:", rows);
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:251", "解析到的total:", total);
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:252", "rows长度:", rows.length);
+            const processedRows = rows.map((item) => ({
+              ...item,
+              hasReview: item.hasReview !== void 0 ? item.hasReview : false
+            }));
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:260", "处理后的rows:", processedRows);
+            if (this.currentPage === 1) {
+              this.$set(this, "appointmentList", processedRows);
+            } else {
+              this.$set(this, "appointmentList", this.appointmentList.concat(processedRows));
+            }
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:268", "最终appointmentList:", this.appointmentList);
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:269", "最终appointmentList长度:", this.appointmentList.length);
+            this.batchCheckOrderStatus(processedRows);
+            this.hasMore = this.appointmentList.length < total;
+          } else {
+            throw new Error(((_a = res.data) == null ? void 0 : _a.msg) || "获取预约列表失败");
+          }
         } else {
-          throw new Error(((_a = res.data) == null ? void 0 : _a.msg) || "获取预约列表失败");
+          throw new Error(((_b = res.data) == null ? void 0 : _b.msg) || "获取预约列表失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:209", "获取预约列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:286", "获取预约列表失败:", error);
         common_vendor.index.showToast({
           title: error.message || "获取预约列表失败",
           icon: "none"
@@ -185,7 +243,7 @@ const _sfc_main = {
           }
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:341", "查询订单状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:418", "查询订单状态失败:", error);
       }
     },
     // 批量检查订单状态
@@ -216,7 +274,7 @@ const _sfc_main = {
           this.$forceUpdate();
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:380", "查询评价状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:457", "查询评价状态失败:", error);
         this.$set(item, "hasReview", false);
       }
     },
@@ -266,7 +324,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:437", "更新订单状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:514", "更新订单状态失败:", error);
         common_vendor.index.showToast({
           title: "支付成功，但更新订单状态失败",
           icon: "none"
@@ -275,7 +333,7 @@ const _sfc_main = {
     },
     // 处理支付失败
     handlePaymentFail(err) {
-      common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:446", "支付失败:", err);
+      common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:523", "支付失败:", err);
       if (err.errMsg && (err.errMsg.indexOf("cancel") !== -1 || err.errMsg.indexOf("取消") !== -1)) {
         common_vendor.index.showToast({
           title: "已取消支付",
@@ -345,7 +403,7 @@ const _sfc_main = {
             common_vendor.index.showLoading({
               title: "支付中..."
             });
-            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:557", "微信小程序：使用模拟支付（沙盒环境）");
+            common_vendor.index.__f__("log", "at pages/appointment/appointment.vue:634", "微信小程序：使用模拟支付（沙盒环境）");
             common_vendor.index.hideLoading();
             const confirmRes2 = await common_vendor.index.showModal({
               title: "模拟支付",
@@ -368,7 +426,7 @@ const _sfc_main = {
           throw new Error(((_b = orderRes.data) == null ? void 0 : _b.msg) || "查询订单失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:652", "支付失败:", error);
+        common_vendor.index.__f__("error", "at pages/appointment/appointment.vue:729", "支付失败:", error);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: error.message || "支付失败",
@@ -408,8 +466,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       } : {}, {
         k: item.status === "3"
       }, item.status === "3" ? common_vendor.e({
-        l: !item.hasReview
-      }, !item.hasReview ? {
+        l: item.hasReview !== true && item.hasReview !== "true" && item.hasReview !== 1
+      }, item.hasReview !== true && item.hasReview !== "true" && item.hasReview !== 1 ? {
         m: common_vendor.o(($event) => $options.goToReview(item), item.appointmentId)
       } : {}) : {}, {
         n: item.appointmentId,

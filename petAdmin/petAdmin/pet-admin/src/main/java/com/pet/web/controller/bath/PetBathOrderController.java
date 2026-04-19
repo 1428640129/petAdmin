@@ -1,6 +1,8 @@
 package com.pet.web.controller.bath;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -107,8 +109,13 @@ public class PetBathOrderController extends BaseController
     @PreAuthorize("@ss.hasPermi('bath:order:pay')")
     @Log(title = "订单管理", businessType = BusinessType.UPDATE)
     @PutMapping("/pay/{orderId}")
-    public AjaxResult payOrder(@PathVariable Long orderId, @RequestBody java.math.BigDecimal payAmount)
+    public AjaxResult payOrder(@PathVariable Long orderId, @RequestBody Map<String, Object> body)
     {
+        BigDecimal payAmount = parsePayAmount(body);
+        if (payAmount == null)
+        {
+            return error("支付金额不能为空");
+        }
         return toAjax(bathOrderService.payOrder(orderId, payAmount));
     }
 
@@ -134,9 +141,42 @@ public class PetBathOrderController extends BaseController
      * 小程序支付订单（无需权限验证）
      */
     @PutMapping("/miniprogram/pay/{orderId}")
-    public AjaxResult payOrderForMiniprogram(@PathVariable Long orderId, @RequestBody java.math.BigDecimal payAmount)
+    public AjaxResult payOrderForMiniprogram(@PathVariable Long orderId, @RequestBody Map<String, Object> body)
     {
+        BigDecimal payAmount = parsePayAmount(body);
+        if (payAmount == null)
+        {
+            return error("支付金额不能为空");
+        }
         return toAjax(bathOrderService.payOrder(orderId, payAmount));
+    }
+
+    /** 从 JSON 体中解析 payAmount（兼容 Integer/Double/BigDecimal/字符串） */
+    private static BigDecimal parsePayAmount(Map<String, Object> body)
+    {
+        if (body == null)
+        {
+            return null;
+        }
+        Object raw = body.get("payAmount");
+        if (raw == null)
+        {
+            return null;
+        }
+        if (raw instanceof BigDecimal)
+        {
+            return (BigDecimal) raw;
+        }
+        if (raw instanceof Number)
+        {
+            return new BigDecimal(raw.toString());
+        }
+        String s = String.valueOf(raw).trim();
+        if (s.isEmpty())
+        {
+            return null;
+        }
+        return new BigDecimal(s);
     }
 
     /**

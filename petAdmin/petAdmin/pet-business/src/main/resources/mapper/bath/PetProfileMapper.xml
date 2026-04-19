@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PetProfileMapper">
+    
+    <resultMap type="com.pet.system.domain.PetProfile" id="PetProfileResult">
+        <id     property="petId"          column="pet_id"          />
+        <result property="userId"         column="user_id"         />
+        <result property="petName"        column="pet_name"        />
+        <result property="petBreed"       column="pet_breed"       />
+        <result property="petAge"         column="pet_age"         />
+        <result property="petSex"         column="pet_sex"         />
+        <result property="petWeight"       column="pet_weight"      />
+        <result property="hairType"       column="hair_type"       />
+        <result property="petPhoto"       column="pet_photo"       />
+        <result property="healthStatus"   column="health_status"   />
+        <result property="specialNeeds"   column="special_needs"   />
+        <result property="allergyHistory" column="allergy_history" />
+        <result property="isDefault"      column="is_default"      />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"      column="update_by"       />
+        <result property="updateTime"    column="update_time"     />
+        <result property="remark"        column="remark"          />
+    </resultMap>
+    
+    <sql id="selectPetProfileVo">
+        select pet_id, user_id, pet_name, pet_breed, pet_age, pet_sex, pet_weight, hair_type, 
+               pet_photo, health_status, special_needs, allergy_history, is_default, 
+               create_by, create_time, update_by, update_time, remark 
+        from pet_profile
+    </sql>
+    
+    <select id="selectPetProfileList" parameterType="com.pet.system.domain.PetProfile" resultMap="PetProfileResult">
+        <include refid="selectPetProfileVo"/>
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="petName != null and petName != ''">
+                AND pet_name like concat('%', #{petName}, '%')
+            </if>
+            <if test="petBreed != null and petBreed != ''">
+                AND pet_breed like concat('%', #{petBreed}, '%')
+            </if>
+            <if test="hairType != null and hairType != ''">
+                AND hair_type = #{hairType}
+            </if>
+        </where>
+        order by is_default desc, create_time desc
+    </select>
+    
+    <select id="selectPetProfileListByUserId" parameterType="Long" resultMap="PetProfileResult">
+        <include refid="selectPetProfileVo"/>
+        where user_id = #{userId}
+        order by is_default desc, create_time desc
+    </select>
+    
+    <select id="selectDefaultPetByUserId" parameterType="Long" resultMap="PetProfileResult">
+        <include refid="selectPetProfileVo"/>
+        where user_id = #{userId} and is_default = '1'
+        limit 1
+    </select>
+    
+    <select id="selectPetProfileById" parameterType="Long" resultMap="PetProfileResult">
+        <include refid="selectPetProfileVo"/>
+        where pet_id = #{petId}
+    </select>
+    
+    <insert id="insertPetProfile" parameterType="com.pet.system.domain.PetProfile" useGeneratedKeys="true" keyProperty="petId">
+        insert into pet_profile
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="petName != null and petName != ''">pet_name,</if>
+            <if test="petBreed != null">pet_breed,</if>
+            <if test="petAge != null">pet_age,</if>
+            <if test="petSex != null">pet_sex,</if>
+            <if test="petWeight != null">pet_weight,</if>
+            <if test="hairType != null">hair_type,</if>
+            <if test="petPhoto != null">pet_photo,</if>
+            <if test="healthStatus != null">health_status,</if>
+            <if test="specialNeeds != null">special_needs,</if>
+            <if test="allergyHistory != null">allergy_history,</if>
+            <if test="isDefault != null">is_default,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="petName != null and petName != ''">#{petName},</if>
+            <if test="petBreed != null">#{petBreed},</if>
+            <if test="petAge != null">#{petAge},</if>
+            <if test="petSex != null">#{petSex},</if>
+            <if test="petWeight != null">#{petWeight},</if>
+            <if test="hairType != null">#{hairType},</if>
+            <if test="petPhoto != null">#{petPhoto},</if>
+            <if test="healthStatus != null">#{healthStatus},</if>
+            <if test="specialNeeds != null">#{specialNeeds},</if>
+            <if test="allergyHistory != null">#{allergyHistory},</if>
+            <if test="isDefault != null">#{isDefault},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <update id="updatePetProfile" parameterType="com.pet.system.domain.PetProfile">
+        update pet_profile
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="petName != null and petName != ''">pet_name = #{petName},</if>
+            <if test="petBreed != null">pet_breed = #{petBreed},</if>
+            <if test="petAge != null">pet_age = #{petAge},</if>
+            <if test="petSex != null">pet_sex = #{petSex},</if>
+            <if test="petWeight != null">pet_weight = #{petWeight},</if>
+            <if test="hairType != null">hair_type = #{hairType},</if>
+            <if test="petPhoto != null">pet_photo = #{petPhoto},</if>
+            <if test="healthStatus != null">health_status = #{healthStatus},</if>
+            <if test="specialNeeds != null">special_needs = #{specialNeeds},</if>
+            <if test="allergyHistory != null">allergy_history = #{allergyHistory},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where pet_id = #{petId}
+    </update>
+    
+    <update id="cancelDefaultPetByUserId" parameterType="Long">
+        update pet_profile set is_default = '0', update_time = sysdate()
+        where user_id = #{userId} and is_default = '1'
+    </update>
+    
+    <delete id="deletePetProfileById" parameterType="Long">
+        delete from pet_profile where pet_id = #{petId}
+    </delete>
+    
+    <delete id="deletePetProfileByIds" parameterType="Long">
+        delete from pet_profile where pet_id in 
+        <foreach item="petId" collection="array" open="(" separator="," close=")">
+            #{petId}
+        </foreach>
+    </delete>
+    
+</mapper>
+
+
+
+
+

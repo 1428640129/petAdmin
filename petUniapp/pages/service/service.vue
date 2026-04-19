@@ -270,6 +270,21 @@
 			}
 		},
 		onLoad(options) {
+			// 检查登录状态
+			const token = uni.getStorageSync('token');
+			const userId = uni.getStorageSync('userId');
+			if (!token || !userId) {
+				uni.showToast({
+					title: '请先登录',
+					icon: 'none'
+				});
+				setTimeout(() => {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					});
+				}, 1500);
+				return;
+			}
 			// 如果从首页传递了服务ID，保存起来
 			if (options.serviceId) {
 				this.preSelectedServiceId = parseInt(options.serviceId);
@@ -474,6 +489,21 @@
 			},
 			// 提交预约
 			async submitAppointment() {
+				// 检查登录状态
+				const token = uni.getStorageSync('token');
+				const userId = uni.getStorageSync('userId');
+				if (!token || !userId) {
+					uni.showToast({
+						title: '请先登录',
+						icon: 'none'
+					});
+					setTimeout(() => {
+						uni.navigateTo({
+							url: '/pages/login/login'
+						});
+					}, 1500);
+					return;
+				}
 				if (!this.canSubmit) {
 					uni.showToast({
 						title: '请完善必填信息',

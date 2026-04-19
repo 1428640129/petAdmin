@@ -3,8 +3,10 @@ package com.pet.business.service.impl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.pet.business.mapper.PetBathUserMapper;
 import com.pet.business.service.IPetBathUserService;
+import com.pet.business.service.IMemberInfoService;
 import com.pet.common.utils.SecurityUtils;
 import com.pet.system.domain.PetBathUser;
 
@@ -18,6 +20,9 @@ public class PetBathUserServiceImpl implements IPetBathUserService
 {
     @Autowired
     private PetBathUserMapper userMapper;
+
+    @Autowired
+    private IMemberInfoService memberInfoService;
 
     /**
      * 查询前台用户
@@ -62,6 +67,7 @@ public class PetBathUserServiceImpl implements IPetBathUserService
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertPetBathUser(PetBathUser user)
     {
         if (user.getPassword() != null && !user.getPassword().isEmpty())
@@ -77,7 +83,23 @@ public class PetBathUserServiceImpl implements IPetBathUserService
             user.setStatus("0"); // 默认正常
         }
         user.setCreateBy("app");
-        return userMapper.insertPetBathUser(user);
+        int result = userMapper.insertPetBathUser(user);
+        
+        // 如果是顾客用户，自动初始化会员信息
+        if (result > 0 && "0".equals(user.getUserType()) && user.getUserId() != null)
+        {
+            try
+            {
+                memberInfoService.initMemberInfo(user.getUserId());
+            }
+            catch (Exception e)
+            {
+                // 会员初始化失败不影响用户注册，记录日志即可
+                // 可以在后续查询时自动初始化
+            }
+        }
+        
+        return result;
     }
 
     /**

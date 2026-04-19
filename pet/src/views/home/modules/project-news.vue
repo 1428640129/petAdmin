@@ -12,9 +12,23 @@ interface NewsItem {
   id: number;
   content: string;
   time: string;
+  avatar?: string;
 }
 
 const newses = ref<NewsItem[]>([]);
+
+// 获取头像URL
+function getAvatarUrl(avatar?: string) {
+  if (!avatar) {
+    return '';
+  }
+  // 如果是相对路径，需要拼接基础URL
+  if (avatar.startsWith('/')) {
+    const baseURL = import.meta.env.VITE_SERVICE_BASE_URL || '';
+    return baseURL + avatar;
+  }
+  return avatar;
+}
 
 // 加载服务动态信息（接口返回的 serviceNews，无数据时显示示例）
 const loadServiceNews = async () => {
@@ -78,7 +92,17 @@ function handleMoreNews() {
     <ElTimeline v-if="newses.length">
       <ElTimelineItem v-for="item in newses" :key="item.id" :timestamp="item.time" placement="top">
         <ElSpace>
-          <SoybeanAvatar class="size-48px!" />
+          <div class="size-48px shrink-0 overflow-hidden rd-1/2">
+            <img
+              v-if="getAvatarUrl(item.avatar)"
+              :src="getAvatarUrl(item.avatar)"
+              alt="用户头像"
+              class="size-full object-cover"
+            />
+            <div v-else class="size-full flex items-center justify-center bg-gray-100">
+              <SvgIcon icon="ph:user-circle" class="text-48px text-gray-400" />
+            </div>
+          </div>
           <p>{{ item.content }}</p>
         </ElSpace>
       </ElTimelineItem>

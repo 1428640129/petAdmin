@@ -20,6 +20,7 @@ import com.pet.common.core.domain.AjaxResult;
 import com.pet.common.core.page.TableDataInfo;
 import com.pet.common.enums.BusinessType;
 import com.pet.common.utils.poi.ExcelUtil;
+import com.pet.common.utils.ServletUtils;
 import java.util.Map;
 import com.pet.system.domain.PetBathAppointment;
 import com.pet.system.domain.PetBathReview;
@@ -98,18 +99,58 @@ public class PetBathAppointmentController extends BaseController
             // 尝试从token获取用户ID
             Long userId = null;
             try {
+                // 先尝试从Spring Security获取（后台管理系统用户）
                 userId = getUserId();
             } catch (Exception e) {
-                // 用户未登录，使用默认值0（匿名用户）
-                userId = 0L;
+                // 如果Spring Security获取失败，尝试从小程序token中解析
+                try {
+                    jakarta.servlet.http.HttpServletRequest request = ServletUtils.getRequest();
+                    String authHeader = request.getHeader("Authorization");
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        String token = authHeader.substring(7);
+                        logger.info("收到token: " + token);
+                        // 解析小程序token格式：pet_bath_{userId}_{timestamp}_{uuid}
+                        if (token.startsWith("pet_bath_")) {
+                            String[] parts = token.split("_");
+                            logger.info("token分割后长度: " + parts.length);
+                            if (parts.length >= 3) {
+                                userId = Long.parseLong(parts[2]);
+                                logger.info("解析到userId: " + userId);
+                            } else {
+                                logger.warn("token格式不正确，parts长度不足3: " + parts.length);
+                            }
+                        } else {
+                            logger.warn("token格式不正确，不以pet_bath_开头: " + token);
+                        }
+                    } else {
+                        logger.warn("Authorization头不存在或格式不正确: " + authHeader);
+                    }
+                } catch (Exception ex) {
+                    // 解析token失败
+                    logger.error("解析小程序token失败: " + ex.getMessage(), ex);
+                }
+                
+                // 如果还是无法获取userId，返回错误
+                if (userId == null) {
+                    logger.error("无法获取用户ID，无法查询预约列表");
+                    TableDataInfo dataTable = new TableDataInfo();
+                    dataTable.setCode(HttpStatus.UNAUTHORIZED);
+                    dataTable.setMsg("用户未登录，请先登录");
+                    dataTable.setRows(new ArrayList<>());
+                    dataTable.setTotal(0L);
+                    return dataTable;
+                }
             }
+            
             appointment.setUserId(userId);
+            logger.info("最终使用的userId: " + userId);
             
             // 设置分页参数
             com.github.pagehelper.PageHelper.startPage(pageNum, pageSize);
             
             // 查询预约列表
             List<PetBathAppointment> list = bathAppointmentService.selectBathAppointmentList(appointment);
+            logger.info("查询到的预约列表数量: " + (list != null ? list.size() : 0));
             
             // 为已完成状态的预约添加评价状态标记
             if (list != null && !list.isEmpty()) {
@@ -123,9 +164,10 @@ public class PetBathAppointmentController extends BaseController
                 
                 // 批量查询评价状态（一次性查询所有已完成预约的评价）
                 java.util.Set<Long> reviewedAppointmentIds = new java.util.HashSet<>();
-                if (!completedAppointmentIds.isEmpty()) {
-                    // 查询所有已完成预约的评价（状态为0的正常评价）
+                if (!completedAppointmentIds.isEmpty() && userId != null && userId > 0) {
+                    // 查询当前用户对已完成预约的评价（状态为0的正常评价）
                     PetBathReview reviewQuery = new PetBathReview();
+                    reviewQuery.setUserId(userId); // 只查询当前用户的评价
                     reviewQuery.setStatus("0"); // 0=正常状态
                     List<PetBathReview> allReviews = bathReviewService.selectBathReviewList(reviewQuery);
                     if (allReviews != null) {
@@ -139,6 +181,7 @@ public class PetBathAppointmentController extends BaseController
                 
                 // 将预约对象转换为Map，添加hasReview字段
                 List<Map<String, Object>> resultList = new ArrayList<>();
+                logger.info("开始转换预约列表，原始list大小: " + list.size());
                 for (PetBathAppointment apt : list) {
                     Map<String, Object> itemMap = new HashMap<>();
                     // 复制所有字段
@@ -168,13 +211,18 @@ public class PetBathAppointmentController extends BaseController
                     }
                     resultList.add(itemMap);
                 }
+                logger.info("转换后的resultList大小: " + resultList.size());
                 
                 TableDataInfo dataTable = getDataTable(list);
+                logger.info("getDataTable返回的total: " + dataTable.getTotal() + ", rows大小: " + (dataTable.getRows() != null ? dataTable.getRows().size() : 0));
                 dataTable.setRows(resultList);
+                logger.info("设置resultList后的total: " + dataTable.getTotal() + ", rows大小: " + (dataTable.getRows() != null ? dataTable.getRows().size() : 0));
                 return dataTable;
             }
             
-            return getDataTable(list);
+            TableDataInfo dataTable = getDataTable(list);
+            logger.info("返回的TableDataInfo（空列表） - code: " + dataTable.getCode() + ", total: " + dataTable.getTotal() + ", rows数量: " + (dataTable.getRows() != null ? dataTable.getRows().size() : 0));
+            return dataTable;
         } catch (Exception e) {
             // 返回空的TableDataInfo而不是AjaxResult
             TableDataInfo dataTable = new TableDataInfo();
@@ -250,23 +298,50 @@ public class PetBathAppointmentController extends BaseController
             Long userId = null;
             String createBy = "miniprogram_user"; // 默认创建者
             try {
+                // 先尝试从Spring Security获取（后台管理系统用户）
                 userId = getUserId();
                 createBy = getUsername(); // 如果用户已登录，使用用户名
+                logger.info("从Spring Security获取到userId: " + userId);
             } catch (Exception e) {
-                // 用户未登录，尝试从请求参数中获取
-                if (params.containsKey("userId")) {
-                    Object userIdObj = params.get("userId");
-                    if (userIdObj instanceof Number) {
-                        userId = ((Number) userIdObj).longValue();
+                // 如果Spring Security获取失败，尝试从小程序token中解析
+                logger.info("Spring Security获取userId失败，尝试解析小程序token");
+                try {
+                    jakarta.servlet.http.HttpServletRequest request = ServletUtils.getRequest();
+                    String authHeader = request.getHeader("Authorization");
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        String token = authHeader.substring(7);
+                        logger.info("收到token: " + token);
+                        // 解析小程序token格式：pet_bath_{userId}_{timestamp}_{uuid}
+                        if (token.startsWith("pet_bath_")) {
+                            String[] parts = token.split("_");
+                            logger.info("token分割后parts数量: " + parts.length);
+                            if (parts.length >= 3) {
+                                userId = Long.parseLong(parts[2]);
+                                logger.info("成功解析到userId: " + userId);
+                            } else {
+                                logger.warn("token格式不正确，parts长度不足3，实际长度: " + parts.length);
+                            }
+                        } else {
+                            logger.warn("token格式不正确，不以pet_bath_开头");
+                        }
+                    } else {
+                        logger.warn("Authorization头不存在或格式不正确");
                     }
+                } catch (NumberFormatException ex) {
+                    logger.error("解析userId失败，数字格式错误: " + ex.getMessage());
+                } catch (Exception ex) {
+                    logger.error("解析小程序token失败: " + ex.getMessage(), ex);
                 }
-                // 如果还是没有，使用默认值 0（表示匿名用户）
+                
+                // 如果还是无法获取userId，返回错误
                 if (userId == null) {
-                    userId = 0L;
+                    logger.error("无法获取用户ID，无法提交预约");
+                    return error("用户未登录，请先登录");
                 }
             }
             appointment.setUserId(userId);
             appointment.setCreateBy(createBy);
+            logger.info("最终使用的userId: " + userId);
             
             return toAjax(bathAppointmentService.insertBathAppointment(appointment));
         } catch (Exception e) {

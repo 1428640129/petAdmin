@@ -602,6 +602,7 @@ declare namespace App {
             userStatus: string;
             userRole: string;
             form: {
+              password: string;
               userName: string;
               userGender: string;
               nickName: string;

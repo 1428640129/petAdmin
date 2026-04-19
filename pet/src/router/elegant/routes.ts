@@ -114,6 +114,16 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'bath_member',
+        path: '/bath/member',
+        component: 'view.bath_member',
+        meta: {
+          title: 'bath_member',
+          i18nKey: 'route.bath_member',
+          hideInMenu: true
+        }
+      },
+      {
         name: 'bath_notification',
         path: '/bath/notification',
         component: 'view.bath_notification',
@@ -144,6 +154,16 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.bath_payment',
           icon: 'mdi:credit-card',
           order: 4,
+          hideInMenu: true
+        }
+      },
+      {
+        name: 'bath_pet',
+        path: '/bath/pet',
+        component: 'view.bath_pet',
+        meta: {
+          title: 'bath_pet',
+          i18nKey: 'route.bath_pet',
           hideInMenu: true
         }
       },

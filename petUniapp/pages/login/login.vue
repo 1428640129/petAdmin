@@ -228,12 +228,16 @@
 					});
 
 					if (res.statusCode === 200 && res.data && res.data.code === 200) {
-						// 保存用户信息
+						// 保存用户信息和token
 						const userInfo = res.data.data;
 						if (userInfo) {
 							uni.setStorageSync('userInfo', userInfo);
 							uni.setStorageSync('userId', userInfo.userId);
 							uni.setStorageSync('userType', userInfo.userType); // 0=顾客,1=商家
+							// 保存token
+							if (userInfo.token) {
+								uni.setStorageSync('token', userInfo.token);
+							}
 						}
 
 						uni.showToast({

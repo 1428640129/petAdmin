@@ -120,6 +120,9 @@ const _sfc_main = {
             common_vendor.index.setStorageSync("userInfo", userInfo);
             common_vendor.index.setStorageSync("userId", userInfo.userId);
             common_vendor.index.setStorageSync("userType", userInfo.userType);
+            if (userInfo.token) {
+              common_vendor.index.setStorageSync("token", userInfo.token);
+            }
           }
           common_vendor.index.showToast({
             title: "登录成功",

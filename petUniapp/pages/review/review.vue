@@ -7,6 +7,15 @@
 		
 		<!-- 表单内容 -->
 		<scroll-view class="form-content" scroll-y="true">
+			<!-- 评价描述 -->
+			<view class="review-desc-card">
+				<view class="desc-header">
+					<text class="desc-title">服务评价说明</text>
+				</view>
+				<view class="desc-content">
+					<text class="desc-text">感谢您使用我们的服务！您的评价对我们非常重要，可以帮助我们持续改进服务质量。请根据实际体验，对服务进行客观、真实的评价，包括服务态度、专业程度、环境设施等方面。您的宝贵意见将帮助我们为更多宠物主人提供更好的服务。</text>
+				</view>
+			</view>
 			<!-- 服务信息 -->
 			<view class="form-section">
 				<view class="section-title">
@@ -512,5 +521,42 @@
 			box-shadow: none;
 		}
 	}
+	
+	.review-desc-card {
+		background-color: #fffaf0;
+		border-radius: 20rpx;
+		padding: 30rpx;
+		margin-bottom: 20rpx;
+		border: 2rpx solid #d2b48c;
+		box-shadow: 0 4rpx 12rpx rgba(210, 180, 140, 0.2);
+	}
+	
+	.desc-header {
+		text-align: center;
+		margin-bottom: 20rpx;
+	}
+	
+	.desc-title {
+		font-size: 32rpx;
+		color: #ff6b35;
+		font-weight: bold;
+		display: block;
+	}
+	
+	.desc-content {
+		text-align: left;
+	}
+	
+	.desc-text {
+		font-size: 26rpx;
+		color: #663300;
+		line-height: 40rpx;
+		display: block;
+	}
 </style>
+
+
+
+
+
 

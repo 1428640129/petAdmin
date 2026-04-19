@@ -47,7 +47,7 @@ const { columns, data, getData, getDataByPage, loading, mobilePagination } = use
       label: $t('page.manage.user.userGender'),
       width: 100,
       formatter: row => {
-        if (row.userGender === undefined) {
+        if (row.userGender === undefined || row.userGender === null) {
           return '';
         }
 
@@ -56,9 +56,15 @@ const { columns, data, getData, getDataByPage, loading, mobilePagination } = use
           2: 'danger'
         };
 
-        const label = $t(userGenderRecord[row.userGender]);
+        // 将数字转换为字符串，因为 userGenderRecord 的 key 是字符串类型
+        const genderKey = userGenderRecord[String(row.userGender) as Api.SystemManage.UserGender];
+        if (!genderKey) {
+          return '';
+        }
 
-        return <ElTag type={tagMap[row.userGender]}>{label}</ElTag>;
+        const label = $t(genderKey);
+
+        return <ElTag type={tagMap[row.userGender as Api.SystemManage.UserGender]}>{label}</ElTag>;
       }
     },
     { prop: 'nickName', label: $t('page.manage.user.nickName'), minWidth: 100 },
@@ -69,7 +75,7 @@ const { columns, data, getData, getDataByPage, loading, mobilePagination } = use
       label: $t('page.manage.user.userStatus'),
       align: 'center',
       formatter: row => {
-        if (row.status === undefined) {
+        if (row.status === undefined || row.status === null) {
           return '';
         }
 
@@ -78,9 +84,15 @@ const { columns, data, getData, getDataByPage, loading, mobilePagination } = use
           2: 'warning'
         };
 
-        const label = $t(enableStatusRecord[row.status]);
+        // 将数字转换为字符串，因为 enableStatusRecord 的 key 是字符串类型
+        const statusKey = enableStatusRecord[String(row.status) as Api.Common.EnableStatus];
+        if (!statusKey) {
+          return '';
+        }
 
-        return <ElTag type={tagMap[row.status]}>{label}</ElTag>;
+        const label = $t(statusKey);
+
+        return <ElTag type={tagMap[row.status as Api.Common.EnableStatus]}>{label}</ElTag>;
       }
     },
     {
@@ -138,6 +150,8 @@ function handleDelete(id: number) {
 
 function resetSearchParams() {
   searchParams.value = getInitSearchParams();
+  // 重置后重新查询数据
+  getDataByPage();
 }
 
 function edit(id: number) {

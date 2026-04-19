@@ -33,6 +33,40 @@ public class SpugSmsClient
     private String serviceCompletedUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
+    
+    /**
+     * 初始化后检查配置
+     */
+    @jakarta.annotation.PostConstruct
+    public void init()
+    {
+        log.info("========== Spug 短信配置检查 ==========");
+        log.info("短信功能启用状态: {}", enabled);
+        log.info("验证码短信URL: {}", url != null && !url.isEmpty() ? url.replaceAll("(https://push\\.spug\\.cc/[^/]+/)[^?]+", "$1***") : "未配置");
+        log.info("预约确认短信URL: {}", appointmentUrl != null && !appointmentUrl.isEmpty() ? appointmentUrl.replaceAll("(https://push\\.spug\\.cc/[^/]+/)[^?]+", "$1***") : "未配置");
+        log.info("服务完成短信URL: {}", serviceCompletedUrl != null && !serviceCompletedUrl.isEmpty() ? serviceCompletedUrl.replaceAll("(https://push\\.spug\\.cc/[^/]+/)[^?]+", "$1***") : "未配置");
+        
+        if (!enabled)
+        {
+            log.warn("Spug 短信功能已禁用，所有短信将模拟发送");
+        }
+        else
+        {
+            if (url == null || url.isEmpty())
+            {
+                log.warn("警告：验证码短信URL未配置，验证码短信将无法发送");
+            }
+            if (appointmentUrl == null || appointmentUrl.isEmpty())
+            {
+                log.warn("警告：预约确认短信URL未配置，预约确认短信将无法发送");
+            }
+            if (serviceCompletedUrl == null || serviceCompletedUrl.isEmpty())
+            {
+                log.warn("警告：服务完成短信URL未配置，服务完成短信将无法发送");
+            }
+        }
+        log.info("=====================================");
+    }
 
     /**
      * 发送验证码短信
@@ -224,7 +258,8 @@ public class SpugSmsClient
 
             if (appointmentUrl == null || appointmentUrl.isEmpty())
             {
-                log.warn("Spug 预约通知短信 url 未配置，跳过实际发送");
+                log.error("Spug 预约通知短信 url 未配置，跳过实际发送。请检查 application.yml 中的 spug.sms.appointment-url 配置");
+                log.error("当前配置值 - enabled: {}, appointmentUrl: {}", enabled, appointmentUrl);
                 return false;
             }
             
@@ -236,6 +271,8 @@ public class SpugSmsClient
 
             log.info("Spug 预约通知短信请求 URL: {}", finalUrl.replace(phone, "***")); // 日志中隐藏手机号
             log.debug("Spug 预约通知短信完整 URL: {}", finalUrl); // 调试时显示完整URL
+            log.debug("当前配置 - enabled: {}, appointmentUrl: {}", enabled, 
+                appointmentUrl != null ? appointmentUrl.replaceAll("(https://push\\.spug\\.cc/[^/]+/)[^?]+", "$1***") : "null");
 
             // 使用 GET 请求
             ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
@@ -307,7 +344,8 @@ public class SpugSmsClient
 
             if (serviceCompletedUrl == null || serviceCompletedUrl.isEmpty())
             {
-                log.warn("Spug 服务完成通知短信 url 未配置，跳过实际发送");
+                log.error("Spug 服务完成通知短信 url 未配置，跳过实际发送。请检查 application.yml 中的 spug.sms.service-completed-url 配置");
+                log.error("当前配置值 - enabled: {}, serviceCompletedUrl: {}", enabled, serviceCompletedUrl);
                 return false;
             }
 

@@ -42,8 +42,8 @@ export function setupElegantRouter() {
 
       const constantRoutes: RouteKey[] = ['login', '403', '404', '500'];
 
-      // 隐藏多级菜单、alova示例、插件示例、关于菜单
-      const hideInMenuRoutes: RouteKey[] = ['alova', 'multi-menu', 'plugin', 'about'];
+      // 隐藏多级菜单、alova示例、插件示例、关于菜单、会员积分、宠物信息
+      const hideInMenuRoutes: RouteKey[] = ['alova', 'multi-menu', 'plugin', 'about', 'bath_member', 'bath_pet'];
 
       const meta: Partial<RouteMeta> = {
         title: key,

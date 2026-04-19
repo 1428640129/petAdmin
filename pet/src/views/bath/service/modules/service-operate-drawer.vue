@@ -16,7 +16,7 @@ import {
   ElUpload
 } from 'element-plus';
 import { Delete, Plus } from '@element-plus/icons-vue';
-import { fetchAddBathService, fetchUpdateBathService } from '@/service/api/bath';
+import { fetchAddBathService, fetchGetBathServiceDetail, fetchUpdateBathService } from '@/service/api/bath';
 import { fetchUploadFile } from '@/service/api/common';
 import { $t } from '@/locales';
 
@@ -81,6 +81,20 @@ const defaultPrices = [
   { petType: '0', weightMin: 30.01, weightMax: 999, price: 0 }
 ];
 
+/** 列表接口不带 prices，编辑时需拉详情；并统一为表单可用的类型 */
+function normalizePriceRows(prices: any[]) {
+  return prices.map((p: any) => ({
+    ...p,
+    petType:
+      p.petType !== undefined && p.petType !== null && String(p.petType) !== ''
+        ? String(p.petType)
+        : '0',
+    weightMin: Number(p.weightMin),
+    weightMax: Number(p.weightMax),
+    price: p.price === undefined || p.price === null ? 0 : Number(p.price)
+  }));
+}
+
 // 服务类型选项
 const serviceTypeOptions = [
   { label: '基础洗浴', value: '0' },
@@ -91,28 +105,36 @@ const serviceTypeOptions = [
 watch(
   () => props.visible,
   async newVal => {
-    if (newVal) {
-      if (props.operateType === 'add') {
-        resetForm();
-        // 初始化短毛价格梯度
-        formData.value.prices = JSON.parse(JSON.stringify(defaultPrices));
-        imageList.value = [];
-      } else if (props.rowData) {
-        Object.assign(formData.value, props.rowData);
-        if (!formData.value.prices || formData.value.prices.length === 0) {
-          // 如果没有价格梯度，初始化短毛价格梯度
-          formData.value.prices = JSON.parse(JSON.stringify(defaultPrices));
-        } else {
-          // 确保所有价格梯度都有petType字段（兼容旧数据）
-          formData.value.prices = formData.value.prices.map((p: any) => ({
-            ...p,
-            petType: p.petType || '0'  // 如果没有petType，默认为短毛
-          }));
-        }
-        // 解析图片列表
-        imageList.value = parseImages(formData.value.serviceImages);
-      }
+    if (!newVal) return;
+
+    if (props.operateType === 'add') {
+      resetForm();
+      formData.value.prices = JSON.parse(JSON.stringify(defaultPrices));
+      imageList.value = [];
+      return;
     }
+
+    if (!props.rowData?.serviceId) return;
+
+    let row: Api.Bath.Service = { ...props.rowData };
+    const { data: detail, error: detailError } = await fetchGetBathServiceDetail(props.rowData.serviceId);
+    if (!detailError && detail) {
+      row = detail;
+    }
+
+    Object.assign(formData.value, row);
+    formData.value.serviceType =
+      row.serviceType !== undefined && row.serviceType !== null && String(row.serviceType) !== ''
+        ? String(row.serviceType)
+        : '';
+
+    if (!formData.value.prices || formData.value.prices.length === 0) {
+      formData.value.prices = JSON.parse(JSON.stringify(defaultPrices));
+    } else {
+      formData.value.prices = normalizePriceRows(formData.value.prices);
+    }
+
+    imageList.value = parseImages(formData.value.serviceImages);
   }
 );
 

@@ -50,6 +50,12 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
     @Autowired
     private IPetBathUserService bathUserService;
 
+    @Autowired
+    private com.pet.business.service.IPetProfileService petProfileService;
+
+    @Autowired
+    private com.pet.business.service.IMemberInfoService memberInfoService;
+
     private static final Logger log = LoggerFactory.getLogger(PetBathAppointmentServiceImpl.class);
     
     private static final String ORDER_COMPLETED_SMS_URL = "https://push.spug.cc/sms/I767-Eg3T9CwDB7i-xrSsw";
@@ -95,6 +101,29 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
         {
             appointment.setAppointmentNo("APT" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         }
+        
+        // 如果提供了petId，从宠物档案获取信息
+        if (appointment.getPetId() != null)
+        {
+            com.pet.system.domain.PetProfile petProfile = petProfileService.selectPetProfileById(appointment.getPetId());
+            if (petProfile != null)
+            {
+                // 从宠物档案填充信息
+                if (appointment.getPetName() == null || appointment.getPetName().isEmpty())
+                {
+                    appointment.setPetName(petProfile.getPetName());
+                }
+                if (appointment.getPetWeight() == null)
+                {
+                    appointment.setPetWeight(petProfile.getPetWeight());
+                }
+                if (appointment.getPetType() == null || appointment.getPetType().isEmpty())
+                {
+                    appointment.setPetType(petProfile.getHairType() != null ? petProfile.getHairType() : PetTypeConstants.SHORT_HAIR);
+                }
+            }
+        }
+        
         // 设置默认宠物类型
         if (appointment.getPetType() == null || appointment.getPetType().isEmpty())
         {
@@ -418,7 +447,36 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
             // TODO: 实现退款逻辑
         }
 
-        // 7. 发送"服务完成"通知（包含短信）
+        // 7. 增加会员积分和累计消费
+        if (appointment.getUserId() != null && finalPrice.compareTo(BigDecimal.ZERO) > 0)
+        {
+            try
+            {
+                // 增加累计消费
+                memberInfoService.addConsumption(appointment.getUserId(), finalPrice);
+                
+                // 计算积分：消费1元=1积分
+                int points = finalPrice.intValue();
+                if (points > 0)
+                {
+                    memberInfoService.addPoints(
+                        appointment.getUserId(),
+                        points,
+                        "消费获得",
+                        order.getOrderId(),
+                        "订单完成，消费" + finalPrice.toPlainString() + "元"
+                    );
+                }
+            }
+            catch (Exception e)
+            {
+                // 积分处理失败不影响主流程，记录日志
+                log.warn("增加会员积分失败，用户ID: {}, 订单ID: {}, 错误: {}", 
+                    appointment.getUserId(), order.getOrderId(), e.getMessage());
+            }
+        }
+
+        // 8. 发送"服务完成"通知（包含短信）
         if (appointment.getUserId() != null)
         {
             String title = "服务已完成";

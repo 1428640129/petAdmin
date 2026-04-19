@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { ElMessage } from 'element-plus';
 import { enableStatusOptions, userGenderOptions } from '@/constants/business';
-import { fetchGetAllRoles, fetchGetUserDetail, fetchUpdateUser } from '@/service/api';
+import { fetchAddUser, fetchGetAllRoles, fetchGetUserDetail, fetchUpdateUser } from '@/service/api';
 import { useForm, useFormRules } from '@/hooks/common/form';
 import { $t } from '@/locales';
 
@@ -37,10 +38,18 @@ const title = computed(() => {
   return titles[props.operateType];
 });
 
+const isEdit = computed(() => props.operateType === 'edit');
+
+function mapUserStatusForForm(s: string | undefined) {
+  if (s === '0') return '1';
+  if (s === '1') return '2';
+  return s;
+}
+
 type Model = Pick<
   Api.SystemManage.User,
   'userName' | 'userGender' | 'nickName' | 'userPhone' | 'userEmail' | 'status'
-> & { roleIds: number[] };
+> & { roleIds: number[]; password: string };
 
 const model = ref(createDefaultModel());
 
@@ -52,7 +61,8 @@ function createDefaultModel(): Model {
     userPhone: '',
     userEmail: '',
     roleIds: [],
-    status: undefined
+    status: undefined,
+    password: ''
   };
 }
 
@@ -84,23 +94,23 @@ async function handleInitModel() {
     if (detail?.user) {
       Object.assign(model.value, {
         userName: detail.user.userName,
-        userGender: detail.user.sex ?? detail.user.userGender,
+        userGender: detail.user.userGender,
         nickName: detail.user.nickName,
         userPhone: detail.user.phonenumber ?? detail.user.userPhone,
         userEmail: detail.user.email ?? detail.user.userEmail,
-        status: detail.user.status === '0' ? '1' : detail.user.status === '1' ? '2' : detail.user.status,
-        roleIds: detail.roleIds ?? []
+        status: mapUserStatusForForm(detail.user.status),
+        roleIds: detail.roleIds ?? [],
+        password: ''
       });
     } else {
       Object.assign(model.value, props.rowData);
-      model.value.roleIds =
-        (props.rowData as any).roleIds ??
-        (props.rowData as any).roles?.map((r: any) => r.roleId ?? r.id) ??
-        [];
+      const row = props.rowData as any;
+      model.value.roleIds = row.roleIds ?? row.roles?.map((r: any) => r.roleId ?? r.id) ?? [];
     }
   } else if (props.operateType === 'edit' && props.rowData) {
     Object.assign(model.value, props.rowData);
-    model.value.roleIds = (props.rowData as any).roleIds ?? (props.rowData as any).roles?.map((r: any) => r.roleId ?? r.id) ?? [];
+    const row = props.rowData as any;
+    model.value.roleIds = row.roleIds ?? row.roles?.map((r: any) => r.roleId ?? r.id) ?? [];
   }
 }
 
@@ -109,22 +119,43 @@ function closeDrawer() {
 }
 
 async function handleSubmit() {
-  await validate();
-  if (props.operateType === 'edit' && props.rowData?.id) {
-    await fetchUpdateUser({
-      userId: props.rowData.id,
-      userName: model.value.userName,
-      nickName: model.value.nickName,
-      phonenumber: model.value.userPhone,
-      email: model.value.userEmail,
-      sex: model.value.userGender,
-      status: model.value.status,
-      roleIds: model.value.roleIds
-    });
+  try {
+    await validate();
+    if (props.operateType === 'add') {
+      if (!model.value.password?.trim()) {
+        window.$message?.warning($t('form.pwd.required'));
+        return;
+      }
+      await fetchAddUser({
+        userName: model.value.userName,
+        nickName: model.value.nickName,
+        phonenumber: model.value.userPhone,
+        email: model.value.userEmail,
+        sex: model.value.userGender,
+        status: model.value.status,
+        password: model.value.password,
+        roleIds: model.value.roleIds
+      });
+      window.$message?.success($t('common.addSuccess'));
+    } else if (props.rowData?.id) {
+      await fetchUpdateUser({
+        userId: props.rowData.id,
+        userName: model.value.userName,
+        nickName: model.value.nickName,
+        phonenumber: model.value.userPhone,
+        email: model.value.userEmail,
+        sex: model.value.userGender,
+        status: model.value.status,
+        roleIds: model.value.roleIds
+      });
+      window.$message?.success($t('common.updateSuccess'));
+    }
+    closeDrawer();
+    emit('submitted');
+  } catch (error: any) {
+    const msg = error?.response?.data?.msg || error?.message || $t('common.error');
+    ElMessage.error(msg);
   }
-  window.$message?.success($t('common.updateSuccess'));
-  closeDrawer();
-  emit('submitted');
 }
 
 watch(visible, () => {
@@ -141,6 +172,15 @@ watch(visible, () => {
     <ElForm ref="formRef" :model="model" :rules="rules" label-position="top">
       <ElFormItem :label="$t('page.manage.user.userName')" prop="userName">
         <ElInput v-model="model.userName" :placeholder="$t('page.manage.user.form.userName')" />
+      </ElFormItem>
+      <ElFormItem v-if="!isEdit" :label="$t('page.manage.user.form.password')" prop="password">
+        <ElInput
+          v-model="model.password"
+          type="password"
+          show-password
+          autocomplete="new-password"
+          :placeholder="$t('page.login.common.passwordPlaceholder')"
+        />
       </ElFormItem>
       <ElFormItem :label="$t('page.manage.user.userGender')" prop="userGender">
         <ElRadioGroup v-model="model.userGender">

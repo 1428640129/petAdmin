@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pet.business.mapper.PointsRecordMapper">
+    
+    <resultMap type="com.pet.system.domain.PointsRecord" id="PointsRecordResult">
+        <id     property="recordId"    column="record_id"    />
+        <result property="userId"      column="user_id"      />
+        <result property="points"      column="points"       />
+        <result property="pointsType"  column="points_type"  />
+        <result property="orderId"    column="order_id"     />
+        <result property="remark"      column="remark"       />
+        <result property="createTime"  column="create_time"  />
+    </resultMap>
+    
+    <sql id="selectPointsRecordVo">
+        select record_id, user_id, points, points_type, order_id, remark, create_time 
+        from points_record
+    </sql>
+    
+    <select id="selectPointsRecordList" parameterType="com.pet.system.domain.PointsRecord" resultMap="PointsRecordResult">
+        <include refid="selectPointsRecordVo"/>
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="pointsType != null and pointsType != ''">
+                AND points_type = #{pointsType}
+            </if>
+            <if test="orderId != null">
+                AND order_id = #{orderId}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectPointsRecordListByUserId" parameterType="Long" resultMap="PointsRecordResult">
+        <include refid="selectPointsRecordVo"/>
+        where user_id = #{userId}
+        order by create_time desc
+    </select>
+    
+    <select id="selectPointsRecordById" parameterType="Long" resultMap="PointsRecordResult">
+        <include refid="selectPointsRecordVo"/>
+        where record_id = #{recordId}
+    </select>
+    
+    <insert id="insertPointsRecord" parameterType="com.pet.system.domain.PointsRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into points_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="points != null">points,</if>
+            <if test="pointsType != null">points_type,</if>
+            <if test="orderId != null">order_id,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="points != null">#{points},</if>
+            <if test="pointsType != null">#{pointsType},</if>
+            <if test="orderId != null">#{orderId},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+        </trim>
+    </insert>
+    
+    <delete id="deletePointsRecordById" parameterType="Long">
+        delete from points_record where record_id = #{recordId}
+    </delete>
+    
+    <delete id="deletePointsRecordByIds" parameterType="Long">
+        delete from points_record where record_id in 
+        <foreach item="recordId" collection="array" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </delete>
+    
+</mapper>
+
+
+
+
+

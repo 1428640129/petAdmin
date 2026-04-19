@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.pet.common.annotation.Log;
@@ -58,8 +59,19 @@ public class SysUserController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:user:list')")
     @GetMapping("/list")
-    public TableDataInfo list(SysUser user)
+    public TableDataInfo list(SysUser user,
+        @RequestParam(required = false) String nickName,
+        @RequestParam(required = false) String sex)
     {
+        // 显式接收昵称、性别：部分环境下 GET 参数未正确绑定到 SysUser（camelCase）
+        if (StringUtils.isNotEmpty(nickName))
+        {
+            user.setNickName(nickName.trim());
+        }
+        if (StringUtils.isNotEmpty(sex))
+        {
+            user.setSex(sex.trim());
+        }
         startPage();
         List<SysUser> list = userService.selectUserList(user);
         return getDataTable(list);

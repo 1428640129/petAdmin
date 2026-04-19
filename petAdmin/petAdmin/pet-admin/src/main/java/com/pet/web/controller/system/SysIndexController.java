@@ -234,6 +234,13 @@ public class SysIndexController extends BaseController
                 apt.getServiceName() != null ? apt.getServiceName() : "宠物洗澡",
                 statusText));
             news.put("time", apt.getCreateTime() != null ? sdf.format(apt.getCreateTime()) : "");
+            // 获取用户头像
+            if (apt.getUserId() != null) {
+                PetBathUser user = bathUserService.selectPetBathUserById(apt.getUserId());
+                if (user != null && user.getAvatar() != null) {
+                    news.put("avatar", user.getAvatar());
+                }
+            }
             serviceNews.add(news);
         }
         
@@ -260,6 +267,13 @@ public class SysIndexController extends BaseController
                 order.getTotalAmount() != null ? order.getTotalAmount().doubleValue() : 0,
                 statusText));
             news.put("time", order.getCreateTime() != null ? sdf.format(order.getCreateTime()) : "");
+            // 获取用户头像（订单也关联了userId）
+            if (order.getUserId() != null) {
+                PetBathUser user = bathUserService.selectPetBathUserById(order.getUserId());
+                if (user != null && user.getAvatar() != null) {
+                    news.put("avatar", user.getAvatar());
+                }
+            }
             serviceNews.add(news);
         }
         

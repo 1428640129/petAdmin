@@ -1,8 +1,8 @@
 <script setup lang="tsx">
 import { ref } from 'vue';
-import { ElButton, ElPopconfirm, ElTag } from 'element-plus';
+import { ElButton, ElPopconfirm, ElTag, ElMessage } from 'element-plus';
 import { enableStatusRecord } from '@/constants/business';
-import { fetchGetRoleList } from '@/service/api';
+import { fetchGetRoleList, fetchDeleteRole } from '@/service/api';
 import { defaultTransform, useTableOperate, useUIPaginatedTable } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import RoleOperateDrawer from './modules/role-operate-drawer.vue';
@@ -93,24 +93,40 @@ const {
 } = useTableOperate(data, 'id', getData);
 
 async function handleBatchDelete() {
-  // eslint-disable-next-line no-console
-  console.log(checkedRowKeys.value);
-  // request
-
-  onBatchDeleted();
+  if (checkedRowKeys.value.length === 0) {
+    ElMessage.warning('请选择要删除的角色');
+    return;
+  }
+  try {
+    const roleIds = checkedRowKeys.value.map(key => Number(key));
+    await fetchDeleteRole(roleIds);
+    ElMessage.success('删除成功');
+    onBatchDeleted();
+    getData();
+  } catch (error: any) {
+    const errorMsg = error?.response?.data?.msg || error?.message || '删除失败';
+    ElMessage.error(errorMsg);
+    console.error('删除角色失败:', error);
+  }
 }
 
-function handleDelete(id: number) {
-  // request
-
-  // eslint-disable-next-line no-console
-  console.log(id);
-
-  onDeleted();
+async function handleDelete(id: number) {
+  try {
+    await fetchDeleteRole([id]);
+    ElMessage.success('删除成功');
+    onDeleted();
+    getData();
+  } catch (error: any) {
+    const errorMsg = error?.response?.data?.msg || error?.message || '删除失败';
+    ElMessage.error(errorMsg);
+    console.error('删除角色失败:', error);
+  }
 }
 
 function resetSearchParams() {
   searchParams.value = getInitSearchParams();
+  // 重置后重新查询数据
+  getDataByPage();
 }
 
 function edit(id: number) {

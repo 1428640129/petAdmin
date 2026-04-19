@@ -41,9 +41,11 @@ declare module "@elegant-router/types" {
     "alova_user": "/alova/user";
     "bath": "/bath";
     "bath_appointment": "/bath/appointment";
+    "bath_member": "/bath/member";
     "bath_notification": "/bath/notification";
     "bath_order": "/bath/order";
     "bath_payment": "/bath/payment";
+    "bath_pet": "/bath/pet";
     "bath_review": "/bath/review";
     "bath_service": "/bath/service";
     "function": "/function";
@@ -185,9 +187,11 @@ declare module "@elegant-router/types" {
     | "alova_scenes"
     | "alova_user"
     | "bath_appointment"
+    | "bath_member"
     | "bath_notification"
     | "bath_order"
     | "bath_payment"
+    | "bath_pet"
     | "bath_review"
     | "bath_service"
     | "function_hide-child_one"

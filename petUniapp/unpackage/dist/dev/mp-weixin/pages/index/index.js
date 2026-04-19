@@ -31,7 +31,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
             image: item.imageUrl || ""
           }));
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:106", "获取轮播图失败:", res.data.msg);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:115", "获取轮播图失败:", res.data.msg);
           carouselList.value = [
             {
               title: "专业宠物洗澡",
@@ -40,7 +40,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           ];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:116", "获取轮播图异常:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:125", "获取轮播图异常:", error);
         carouselList.value = [
           {
             title: "专业宠物洗澡",
@@ -86,7 +86,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
             };
           });
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:169", "获取服务列表失败:", res.data.msg);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:178", "获取服务列表失败:", res.data.msg);
           services.value = [
             {
               name: "基础洗澡",
@@ -96,7 +96,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           ];
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:180", "获取服务列表异常:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:189", "获取服务列表异常:", error);
         services.value = [
           {
             name: "基础洗澡",

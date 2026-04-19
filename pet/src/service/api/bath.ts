@@ -205,13 +205,13 @@ export function fetchUpdateBathOrder(data: Api.Bath.Order) {
 }
 
 /**
- * 支付订单
+ * 支付订单（JSON 请求体，避免纯数字被当成 form-urlencoded 导致 415/500）
  */
 export function fetchPayOrder(orderId: number, payAmount?: number) {
     return request({
         url: `/bath/order/pay/${orderId}`,
         method: 'put',
-        data: payAmount
+        data: { payAmount: payAmount ?? null }
     });
 }
 
@@ -287,7 +287,7 @@ export function fetchReplyReview(reviewId: number, replyContent: string) {
     return request({
         url: `/bath/review/reply/${reviewId}`,
         method: 'put',
-        data: replyContent
+        data: { replyContent }
     });
 }
 
@@ -420,6 +420,193 @@ export function fetchRefundPayment(paymentId: number, refundReason: string) {
         url: `/bath/payment/refund/${paymentId}`,
         method: 'put',
         data: refundReason
+    });
+}
+
+// ==================== 宠物档案管理 ====================
+
+/**
+ * 获取宠物档案列表
+ */
+export function fetchGetPetProfileList(params?: any) {
+    return request<Api.Common.PaginatedData<Api.Bath.PetProfile>>({
+        url: '/bath/pet/list',
+        method: 'get',
+        params
+    });
+}
+
+/**
+ * 获取宠物档案详情
+ */
+export function fetchGetPetProfileDetail(petId: number) {
+    return request<Api.Bath.PetProfile>({
+        url: `/bath/pet/${petId}`,
+        method: 'get'
+    });
+}
+
+/**
+ * 新增宠物档案
+ */
+export function fetchAddPetProfile(data: Api.Bath.PetProfile) {
+    return request({
+        url: '/bath/pet',
+        method: 'post',
+        data
+    });
+}
+
+/**
+ * 修改宠物档案
+ */
+export function fetchUpdatePetProfile(data: Api.Bath.PetProfile) {
+    return request({
+        url: '/bath/pet',
+        method: 'put',
+        data
+    });
+}
+
+/**
+ * 删除宠物档案
+ */
+export function fetchDeletePetProfile(petIds: number[]) {
+    return request({
+        url: `/bath/pet/${petIds.join(',')}`,
+        method: 'delete'
+    });
+}
+
+/**
+ * 根据用户ID获取宠物列表（小程序端）
+ */
+export function fetchGetPetProfileListByUser(userId: number) {
+    return request<Api.Bath.PetProfile[]>({
+        url: '/bath/pet/listByUser',
+        method: 'get',
+        params: { userId }
+    });
+}
+
+/**
+ * 获取默认宠物（小程序端）
+ */
+export function fetchGetDefaultPet(userId: number) {
+    return request<Api.Bath.PetProfile>({
+        url: '/bath/pet/default',
+        method: 'get',
+        params: { userId }
+    });
+}
+
+// ==================== 会员管理 ====================
+
+/**
+ * 获取会员信息列表
+ */
+export function fetchGetMemberInfoList(params?: any) {
+    return request<Api.Common.PaginatedData<Api.Bath.MemberInfo>>({
+        url: '/bath/member/list',
+        method: 'get',
+        params
+    });
+}
+
+/**
+ * 获取会员信息详情
+ */
+export function fetchGetMemberInfoDetail(memberId: number) {
+    return request<Api.Bath.MemberInfo>({
+        url: `/bath/member/${memberId}`,
+        method: 'get'
+    });
+}
+
+/**
+ * 根据用户ID获取会员信息（小程序端）
+ */
+export function fetchGetMemberInfoByUser(userId: number) {
+    return request<Api.Bath.MemberInfo>({
+        url: '/bath/member/info',
+        method: 'get',
+        params: { userId }
+    });
+}
+
+/**
+ * 新增会员信息
+ */
+export function fetchAddMemberInfo(data: Api.Bath.MemberInfo) {
+    return request({
+        url: '/bath/member',
+        method: 'post',
+        data
+    });
+}
+
+/**
+ * 修改会员信息
+ */
+export function fetchUpdateMemberInfo(data: Api.Bath.MemberInfo) {
+    return request({
+        url: '/bath/member',
+        method: 'put',
+        data
+    });
+}
+
+/**
+ * 删除会员信息
+ */
+export function fetchDeleteMemberInfo(memberIds: number[]) {
+    return request({
+        url: `/bath/member/${memberIds.join(',')}`,
+        method: 'delete'
+    });
+}
+
+// ==================== 积分记录管理 ====================
+
+/**
+ * 获取积分记录列表
+ */
+export function fetchGetPointsRecordList(params?: any) {
+    return request<Api.Common.PaginatedData<Api.Bath.PointsRecord>>({
+        url: '/bath/points/list',
+        method: 'get',
+        params
+    });
+}
+
+/**
+ * 获取积分记录详情
+ */
+export function fetchGetPointsRecordDetail(recordId: number) {
+    return request<Api.Bath.PointsRecord>({
+        url: `/bath/points/${recordId}`,
+        method: 'get'
+    });
+}
+
+/**
+ * 根据用户ID获取积分记录列表（小程序端）
+ */
+export function fetchGetPointsRecordListByUser(userId: number) {
+    return request<Api.Bath.PointsRecord[]>({
+        url: '/bath/points/listByUser',
+        method: 'get',
+        params: { userId }
+    });
+}
+
+/**
+ * 删除积分记录
+ */
+export function fetchDeletePointsRecord(recordIds: number[]) {
+    return request({
+        url: `/bath/points/${recordIds.join(',')}`,
+        method: 'delete'
     });
 }
 

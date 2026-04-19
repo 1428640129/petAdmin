@@ -191,9 +191,25 @@ public class PetBathUserController extends BaseController
             return error("账号已停用");
         }
         
-        // 清空密码，返回用户信息
+        // 清空密码
         user.setPassword(null);
-        return success(user);
+        
+        // 生成简单的token（使用userId + 时间戳 + 随机字符串）
+        // 实际项目中可以使用JWT，这里为了简化使用简单字符串
+        String token = "pet_bath_" + user.getUserId() + "_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().replace("-", "");
+        
+        // 构建返回数据，包含用户信息和token
+        java.util.Map<String, Object> resultData = new java.util.HashMap<>();
+        resultData.put("userId", user.getUserId());
+        resultData.put("userName", user.getUserName());
+        resultData.put("nickName", user.getNickName());
+        resultData.put("phone", user.getPhone());
+        resultData.put("userType", user.getUserType());
+        resultData.put("avatar", user.getAvatar());
+        resultData.put("status", user.getStatus());
+        resultData.put("token", token);
+        
+        return success(resultData);
     }
 
     /**

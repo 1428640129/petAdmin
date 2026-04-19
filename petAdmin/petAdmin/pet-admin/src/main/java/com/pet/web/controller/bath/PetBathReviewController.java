@@ -1,6 +1,7 @@
 package com.pet.web.controller.bath;
 
 import java.util.List;
+import java.util.Map;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,8 @@ import com.pet.common.core.domain.AjaxResult;
 import com.pet.common.core.page.TableDataInfo;
 import com.pet.common.enums.BusinessType;
 import com.pet.common.utils.poi.ExcelUtil;
+import com.pet.common.utils.ServletUtils;
+import com.pet.common.utils.StringUtils;
 import com.pet.system.domain.PetBathReview;
 import com.pet.business.service.IPetBathReviewService;
 import com.pet.business.service.IPetBathAppointmentService;
@@ -119,9 +122,13 @@ public class PetBathReviewController extends BaseController
     @PreAuthorize("@ss.hasPermi('bath:review:reply')")
     @Log(title = "评价管理", businessType = BusinessType.UPDATE)
     @PutMapping("/reply/{reviewId}")
-    public AjaxResult reply(@PathVariable Long reviewId, @RequestBody String replyContent)
+    public AjaxResult reply(@PathVariable Long reviewId, @RequestBody Map<String, String> body)
     {
-        return toAjax(bathReviewService.replyReview(reviewId, replyContent));
+        if (body == null ||   StringUtils.isEmpty(body.get("replyContent")))
+        {
+            return error("回复内容不能为空");
+        }
+        return toAjax(bathReviewService.replyReview(reviewId, body.get("replyContent").trim()));
     }
 
     /**
@@ -174,8 +181,40 @@ public class PetBathReviewController extends BaseController
     @GetMapping("/miniprogram/byAppointment/{appointmentId}")
     public AjaxResult getReviewByAppointmentId(@PathVariable Long appointmentId)
     {
+        // 尝试从token获取用户ID
+        Long userId = null;
+        try {
+            // 先尝试从Spring Security获取（后台管理系统用户）
+            userId = getUserId();
+        } catch (Exception e) {
+            // 如果Spring Security获取失败，尝试从小程序token中解析
+            try {
+                jakarta.servlet.http.HttpServletRequest request = ServletUtils.getRequest();
+                String authHeader = request.getHeader("Authorization");
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    String token = authHeader.substring(7);
+                    // 解析小程序token格式：pet_bath_{userId}_{timestamp}_{uuid}
+                    if (token.startsWith("pet_bath_")) {
+                        String[] parts = token.split("_");
+                        if (parts.length >= 3) {
+                            userId = Long.parseLong(parts[2]);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                // 解析token失败，返回null
+                logger.error("解析小程序token失败: " + ex.getMessage());
+            }
+            
+            // 如果还是无法获取userId，返回null
+            if (userId == null) {
+                return success(null);
+            }
+        }
+        
         PetBathReview review = new PetBathReview();
         review.setAppointmentId(appointmentId);
+        review.setUserId(userId); // 只查询当前用户的评价
         review.setStatus("0");
         List<PetBathReview> list = bathReviewService.selectBathReviewList(review);
         if (list != null && !list.isEmpty())
@@ -205,21 +244,47 @@ public class PetBathReviewController extends BaseController
             return error("评价内容不能为空");
         }
         
-        // 检查是否已评价
-        PetBathReview existReview = new PetBathReview();
-        existReview.setAppointmentId(review.getAppointmentId());
-        existReview.setStatus("0");
-        List<PetBathReview> existList = bathReviewService.selectBathReviewList(existReview);
-        if (existList != null && !existList.isEmpty())
-        {
-            return error("该预约已评价，不能重复评价");
-        }
-        
         // 从预约信息中获取用户ID和服务ID
         PetBathAppointment appointment = bathAppointmentService.selectBathAppointmentByAppointmentId(review.getAppointmentId());
         if (appointment == null)
         {
             return error("预约信息不存在");
+        }
+        
+        // 获取当前登录用户的ID（从token中获取）
+        Long currentUserId = null;
+        try {
+            // 先尝试从Spring Security获取（后台管理系统用户）
+            currentUserId = getUserId();
+        } catch (Exception e) {
+            // 如果Spring Security获取失败，尝试从小程序token中解析
+            try {
+                jakarta.servlet.http.HttpServletRequest request = ServletUtils.getRequest();
+                String authHeader = request.getHeader("Authorization");
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    String token = authHeader.substring(7);
+                    // 解析小程序token格式：pet_bath_{userId}_{timestamp}_{uuid}
+                    if (token.startsWith("pet_bath_")) {
+                        String[] parts = token.split("_");
+                        if (parts.length >= 3) {
+                            currentUserId = Long.parseLong(parts[2]);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                // 解析token失败
+                logger.error("解析小程序token失败: " + ex.getMessage());
+            }
+            
+            if (currentUserId == null) {
+                return error("用户未登录，无法提交评价");
+            }
+        }
+        
+        // 验证当前用户是否是预约的创建者
+        if (!currentUserId.equals(appointment.getUserId()))
+        {
+            return error("只能评价自己的预约");
         }
         
         // 检查预约状态是否为已完成
@@ -228,15 +293,37 @@ public class PetBathReviewController extends BaseController
             return error("只有已完成的服务才能评价");
         }
         
-        // 设置用户ID和服务ID
-        review.setUserId(appointment.getUserId());
+        // 从订单信息中获取订单ID（用于按“订单”维度限制只能评价一次）
+        PetBathOrder order = bathOrderService.selectBathOrderByAppointmentId(review.getAppointmentId());
+        
+        // 检查是否已评价：
+        // 1. 优先按 当前用户ID + 订单ID 检查（同一用户对同一订单只能评价一次）
+        // 2. 如果订单不存在，再退化为 当前用户ID + 预约ID 检查
+        PetBathReview existReview = new PetBathReview();
+        existReview.setUserId(currentUserId); // 使用当前登录用户的ID检查
+        existReview.setStatus("0");
+        if (order != null && order.getOrderId() != null)
+        {
+            existReview.setOrderId(order.getOrderId());
+        }
+        else
+        {
+            existReview.setAppointmentId(review.getAppointmentId());
+        }
+        List<PetBathReview> existList = bathReviewService.selectBathReviewList(existReview);
+        if (existList != null && !existList.isEmpty())
+        {
+            return error("该订单已评价，不能重复评价");
+        }
+        
+        // 设置用户ID和服务ID（使用当前登录用户的ID）
+        review.setUserId(currentUserId);
         if (review.getServiceId() == null && appointment.getServiceId() != null)
         {
             review.setServiceId(appointment.getServiceId());
         }
         
-        // 从订单信息中获取订单ID
-        PetBathOrder order = bathOrderService.selectBathOrderByAppointmentId(review.getAppointmentId());
+        // 订单存在时，给评价绑定订单ID
         if (order != null && order.getOrderId() != null)
         {
             review.setOrderId(order.getOrderId());

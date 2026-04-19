@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useBoolean } from '@sa/hooks';
 import { enableStatusOptions } from '@/constants/business';
 import { useForm, useFormRules } from '@/hooks/common/form';
+import { fetchAddRole, fetchUpdateRole } from '@/service/api';
 import { $t } from '@/locales';
 import MenuAuthModal from './menu-auth-modal.vue';
 import ButtonAuthModal from './button-auth-modal.vue';
@@ -80,8 +81,26 @@ function closeDrawer() {
 
 async function handleSubmit() {
   await validate();
-  // request
-  window.$message?.success($t('common.updateSuccess'));
+  if (props.operateType === 'edit' && props.rowData?.id) {
+    const row = props.rowData as Api.SystemManage.Role & { roleSort?: number };
+    await fetchUpdateRole({
+      roleId: props.rowData.id,
+      roleName: model.value.roleName,
+      roleCode: model.value.roleCode,
+      roleDesc: model.value.roleDesc,
+      status: model.value.status,
+      roleSort: row.roleSort
+    });
+    window.$message?.success($t('common.updateSuccess'));
+  } else {
+    await fetchAddRole({
+      roleName: model.value.roleName,
+      roleCode: model.value.roleCode,
+      roleDesc: model.value.roleDesc,
+      status: model.value.status
+    });
+    window.$message?.success($t('common.addSuccess'));
+  }
   closeDrawer();
   emit('submitted');
 }

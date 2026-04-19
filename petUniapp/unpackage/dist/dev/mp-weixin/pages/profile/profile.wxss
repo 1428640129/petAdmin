@@ -90,3 +90,30 @@
 .save-btn[disabled].data-v-dd383ca2 {
   opacity: 0.6;
 }
+.profile-desc-card.data-v-dd383ca2 {
+  background-color: #fffaf0;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  border: 2rpx solid #d2b48c;
+  box-shadow: 0 4rpx 12rpx rgba(210, 180, 140, 0.2);
+}
+.desc-header.data-v-dd383ca2 {
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+.desc-title.data-v-dd383ca2 {
+  font-size: 32rpx;
+  color: #ff6b35;
+  font-weight: bold;
+  display: block;
+}
+.desc-content.data-v-dd383ca2 {
+  text-align: left;
+}
+.desc-text.data-v-dd383ca2 {
+  font-size: 26rpx;
+  color: #663300;
+  line-height: 40rpx;
+  display: block;
+}

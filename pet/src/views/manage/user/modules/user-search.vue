@@ -31,11 +31,23 @@ const rules = computed<Record<RuleKey, App.Global.FormRule>>(() => {
 
 async function reset() {
   await restoreValidation();
+  // 重置表单数据
+  model.value = {
+    current: 1,
+    size: 30,
+    status: undefined,
+    userName: undefined,
+    userGender: undefined,
+    nickName: undefined,
+    userPhone: undefined,
+    userEmail: undefined
+  };
   emit('reset');
 }
 
 async function search() {
-  await validate();
+  // 搜索时不需要验证，因为搜索条件都是可选的
+  model.value.current = 1;
   emit('search');
 }
 </script>

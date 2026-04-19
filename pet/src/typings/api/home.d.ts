@@ -32,6 +32,7 @@ declare namespace Api.Home {
       id: number;
       content: string;
       time: string;
+      avatar?: string;
     }>;
   }
 }

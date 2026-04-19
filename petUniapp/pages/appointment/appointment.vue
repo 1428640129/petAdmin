@@ -100,15 +100,17 @@
 						<view v-if="item.status === '1' && !isOrderPaid(item)" class="action-buttons">
 							<button class="pay-btn" @click.stop="handlePay(item)">立即支付</button>
 						</view>
-						<!-- 已完成状态显示评价按钮 -->
+						<!-- 已完成状态显示评价按钮或已评价提示 -->
 						<view v-if="item.status === '3'" class="action-buttons">
+							<!-- 只有未评价的订单才显示评价按钮 -->
 							<button 
-								v-if="!item.hasReview" 
+								v-if="item.hasReview !== true && item.hasReview !== 'true' && item.hasReview !== 1" 
 								class="review-btn" 
 								@click.stop="goToReview(item)"
 							>
 								去评价
 							</button>
+							<!-- 已评价的订单显示已评价文本，不显示按钮 -->
 							<text v-else class="reviewed-text">已评价</text>
 						</view>
 					</view>
@@ -141,7 +143,28 @@
 			}
 		},
 		onLoad() {
+			// 检查登录状态
+			const token = uni.getStorageSync('token');
+			const userId = uni.getStorageSync('userId');
+			if (!token || !userId) {
+				uni.showToast({
+					title: '请先登录',
+					icon: 'none'
+				});
+				setTimeout(() => {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					});
+				}, 1500);
+				return;
+			}
 			this.loadAppointmentList();
+		},
+		onShow() {
+			// 页面显示时刷新列表，确保评价状态是最新的
+			if (this.appointmentList.length > 0) {
+				this.onRefresh();
+			}
 		},
 		onPullDownRefresh() {
 			this.onRefresh();
@@ -163,6 +186,20 @@
 					const baseUrl = (app && app.globalData && app.globalData.baseUrl) || 'http://localhost:8080';
 					const token = uni.getStorageSync('token');
 					
+					// 再次检查token是否存在
+					if (!token) {
+						uni.showToast({
+							title: '请先登录',
+							icon: 'none'
+						});
+						setTimeout(() => {
+							uni.navigateTo({
+								url: '/pages/login/login'
+							});
+						}, 1500);
+						return;
+					}
+					
 					// 构建查询参数
 					const params = {
 						pageNum: this.currentPage,
@@ -174,6 +211,8 @@
 						params.status = this.activeTab;
 					}
 					
+					console.log('请求预约列表，token:', token ? token.substring(0, 20) + '...' : 'null');
+					
 					const res = await uni.request({
 						url: `${baseUrl}/bath/appointment/miniprogram/list`,
 						method: 'GET',
@@ -184,24 +223,62 @@
 						}
 					});
 					
-					if (res.statusCode === 200 && res.data && res.data.code === 200) {
-						const data = res.data.data || res.data;
-						const rows = data.rows || data.list || [];
-						const total = data.total || 0;
-						
-						if (this.currentPage === 1) {
-							this.appointmentList = rows;
-						} else {
-							this.appointmentList = this.appointmentList.concat(rows);
+					console.log('预约列表响应:', JSON.stringify(res, null, 2));
+					
+					if (res.statusCode === 200 && res.data) {
+						// 检查是否是错误响应（401表示未授权/未登录）
+						if (res.data.code === 401) {
+							// 用户未登录，跳转到登录页
+							uni.showToast({
+								title: res.data.msg || '请先登录',
+								icon: 'none'
+							});
+							setTimeout(() => {
+								uni.navigateTo({
+									url: '/pages/login/login'
+								});
+							}, 1500);
+							return;
 						}
 						
-					// 批量查询订单状态（仅对已确认状态的预约）
-					this.batchCheckOrderStatus(rows);
-					
-					// 注意：评价状态（hasReview）已由后端直接返回，无需前端再次查询
-					
-					// 判断是否还有更多数据
-					this.hasMore = this.appointmentList.length < total;
+						// TableDataInfo格式：{code: 200, msg: "查询成功", rows: [...], total: 1}
+						// 数据直接在res.data中，不需要再取res.data.data
+						if (res.data.code === 200) {
+							const rows = res.data.rows || res.data.list || [];
+							const total = res.data.total || 0;
+							
+							console.log('解析到的rows:', rows);
+							console.log('解析到的total:', total);
+							console.log('rows长度:', rows.length);
+							
+							// 确保每个预约项都有 hasReview 字段，默认为 false
+							const processedRows = rows.map(item => ({
+								...item,
+								hasReview: item.hasReview !== undefined ? item.hasReview : false
+							}));
+							
+							console.log('处理后的rows:', processedRows);
+							
+							if (this.currentPage === 1) {
+								this.$set(this, 'appointmentList', processedRows);
+							} else {
+								this.$set(this, 'appointmentList', this.appointmentList.concat(processedRows));
+							}
+							
+							console.log('最终appointmentList:', this.appointmentList);
+							console.log('最终appointmentList长度:', this.appointmentList.length);
+							
+							// 批量查询订单状态（仅对已确认状态的预约）
+							this.batchCheckOrderStatus(processedRows);
+							
+							// 注意：评价状态（hasReview）已由后端直接返回，无需前端再次查询
+							// 但如果后端没有返回，则默认为 false
+							
+							// 判断是否还有更多数据
+							this.hasMore = this.appointmentList.length < total;
+						} else {
+							throw new Error(res.data?.msg || '获取预约列表失败');
+						}
 					} else {
 						throw new Error(res.data?.msg || '获取预约列表失败');
 					}

@@ -224,3 +224,30 @@ page.data-v-7018a65d {
   background: #cccccc;
   box-shadow: none;
 }
+.review-desc-card.data-v-7018a65d {
+  background-color: #fffaf0;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  border: 2rpx solid #d2b48c;
+  box-shadow: 0 4rpx 12rpx rgba(210, 180, 140, 0.2);
+}
+.desc-header.data-v-7018a65d {
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+.desc-title.data-v-7018a65d {
+  font-size: 32rpx;
+  color: #ff6b35;
+  font-weight: bold;
+  display: block;
+}
+.desc-content.data-v-7018a65d {
+  text-align: left;
+}
+.desc-text.data-v-7018a65d {
+  font-size: 26rpx;
+  color: #663300;
+  line-height: 40rpx;
+  display: block;
+}

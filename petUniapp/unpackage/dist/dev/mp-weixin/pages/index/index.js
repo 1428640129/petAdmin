@@ -161,7 +161,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           size: "16",
           color: "#ff6b35"
         }),
-        h: common_vendor.o(makeAppointment)
+        h: common_vendor.o(makeAppointment, "62")
       });
     };
   }

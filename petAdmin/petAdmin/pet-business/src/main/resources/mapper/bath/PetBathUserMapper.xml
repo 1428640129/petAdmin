@@ -53,6 +53,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectPetBathUserVo"/>
         where user_name = #{userName}
     </select>
+
+    <select id="selectPetBathUserByPhone" parameterType="String" resultMap="PetBathUserResult">
+        <include refid="selectPetBathUserVo"/>
+        where phone = #{phone}
+        limit 1
+    </select>
     
     <insert id="insertPetBathUser" parameterType="com.pet.system.domain.PetBathUser" useGeneratedKeys="true" keyProperty="userId">
         insert into pet_bath_user

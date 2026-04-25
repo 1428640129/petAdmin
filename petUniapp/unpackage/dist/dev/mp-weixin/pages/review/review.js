@@ -182,7 +182,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     c: common_vendor.t($data.formData.rating > 0 ? $data.formData.rating + "分" : "请选择评分"),
     d: $data.formData.content,
-    e: common_vendor.o(($event) => $data.formData.content = $event.detail.value),
+    e: common_vendor.o(($event) => $data.formData.content = $event.detail.value, "56"),
     f: common_vendor.t($data.formData.content.length),
     g: common_vendor.f($data.imageList, (image, index, i0) => {
       return {
@@ -193,11 +193,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     h: $data.imageList.length < 3
   }, $data.imageList.length < 3 ? {
-    i: common_vendor.o((...args) => $options.chooseImage && $options.chooseImage(...args))
+    i: common_vendor.o((...args) => $options.chooseImage && $options.chooseImage(...args), "0d")
   } : {}, {
     j: common_vendor.t($options.canSubmit ? "提交评价" : "请完善必填信息"),
     k: !$options.canSubmit,
-    l: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args))
+    l: common_vendor.o((...args) => $options.submitReview && $options.submitReview(...args), "4b")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-7018a65d"]]);

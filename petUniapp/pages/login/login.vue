@@ -116,7 +116,8 @@
 				return /^1[3-9]\d{9}$/.test(this.phone);
 			},
 			canLogin() {
-				return this.isPhoneValid && this.code.length === 6;
+				const c = String(this.code || '').trim();
+				return this.isPhoneValid && c.length === 6;
 			},
 			canAccountLogin() {
 				return this.username.trim().length > 0 && this.password.length >= 6;
@@ -129,6 +130,21 @@
 			}
 		},
 		methods: {
+			getBaseUrl() {
+				const app = getApp();
+				return (app && app.globalData && app.globalData.baseUrl) || 'http://localhost:8080';
+			},
+			startSmsCountdown() {
+				this.isCounting = true;
+				this.countdown = 60;
+				const timer = setInterval(() => {
+					this.countdown--;
+					if (this.countdown <= 0) {
+						clearInterval(timer);
+						this.isCounting = false;
+					}
+				}, 1000);
+			},
 			switchLoginType(type) {
 				this.loginType = type;
 				// 切换时清空表单
@@ -151,33 +167,31 @@
 					return;
 				}
 
-				// 调用发送验证码接口
 				try {
-					// 这里调用后端接口
-					// const res = await uni.request({
-					//   url: 'http://localhost:8080/auth/sendSmsCode',
-					//   method: 'POST',
-					//   data: { phone: this.phone }
-					// });
-					
-					uni.showToast({
-						title: '验证码已发送',
-						icon: 'success'
+					const baseUrl = this.getBaseUrl();
+					const res = await uni.request({
+						url: `${baseUrl}/auth/sendSmsCode`,
+						method: 'POST',
+						header: {
+							'Content-Type': 'application/json'
+						},
+						data: {
+							phone: this.phone.trim()
+						}
 					});
 
-					// 开始倒计时
-					this.isCounting = true;
-					this.countdown = 60;
-					const timer = setInterval(() => {
-						this.countdown--;
-						if (this.countdown <= 0) {
-							clearInterval(timer);
-							this.isCounting = false;
-						}
-					}, 1000);
+					if (res.statusCode === 200 && res.data && res.data.code === 200) {
+						uni.showToast({
+							title: res.data.msg || '验证码已发送',
+							icon: 'success'
+						});
+						this.startSmsCountdown();
+					} else {
+						throw new Error((res.data && res.data.msg) || '发送失败');
+					}
 				} catch (error) {
 					uni.showToast({
-						title: '发送失败，请重试',
+						title: error.message || '发送失败，请重试',
 						icon: 'none'
 					});
 				}
@@ -187,20 +201,44 @@
 					return;
 				}
 				try {
-					uni.showToast({
-						title: '登录成功',
-						icon: 'success'
+					const baseUrl = this.getBaseUrl();
+					const res = await uni.request({
+						url: `${baseUrl}/bath/user/loginBySms`,
+						method: 'POST',
+						header: {
+							'Content-Type': 'application/json'
+						},
+						data: {
+							phone: this.phone.trim(),
+							code: String(this.code || '').trim()
+						}
 					});
 
-					// 跳转到首页
-					setTimeout(() => {
-						uni.switchTab({
-							url: '/pages/index/index'
+					if (res.statusCode === 200 && res.data && res.data.code === 200) {
+						const userInfo = res.data.data;
+						if (userInfo) {
+							uni.setStorageSync('userInfo', userInfo);
+							uni.setStorageSync('userId', userInfo.userId);
+							uni.setStorageSync('userType', userInfo.userType);
+							if (userInfo.token) {
+								uni.setStorageSync('token', userInfo.token);
+							}
+						}
+						uni.showToast({
+							title: '登录成功',
+							icon: 'success'
 						});
-					}, 1500);
+						setTimeout(() => {
+							uni.switchTab({
+								url: '/pages/index/index'
+							});
+						}, 1500);
+					} else {
+						throw new Error((res.data && res.data.msg) || '登录失败');
+					}
 				} catch (error) {
 					uni.showToast({
-						title: '登录失败，请重试',
+						title: error.message || '登录失败，请重试',
 						icon: 'none'
 					});
 				}
@@ -212,8 +250,7 @@
 				}
 
 				try {
-					const app = getApp();
-					const baseUrl = (app && app.globalData && app.globalData.baseUrl) || 'http://localhost:8080';
+					const baseUrl = this.getBaseUrl();
 
 					const res = await uni.request({
 						url: `${baseUrl}/bath/user/login`,

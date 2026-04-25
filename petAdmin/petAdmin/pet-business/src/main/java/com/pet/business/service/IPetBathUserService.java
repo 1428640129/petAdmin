@@ -27,6 +27,14 @@ public interface IPetBathUserService
     public PetBathUser selectPetBathUserByUserName(String userName);
 
     /**
+     * 根据手机号查询前台用户
+     * 
+     * @param phone 手机号
+     * @return 前台用户
+     */
+    public PetBathUser selectPetBathUserByPhone(String phone);
+
+    /**
      * 查询前台用户列表
      * 
      * @param user 前台用户

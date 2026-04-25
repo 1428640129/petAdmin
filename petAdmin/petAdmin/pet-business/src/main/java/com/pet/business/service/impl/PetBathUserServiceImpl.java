@@ -48,6 +48,12 @@ public class PetBathUserServiceImpl implements IPetBathUserService
         return userMapper.selectPetBathUserByUserName(userName);
     }
 
+    @Override
+    public PetBathUser selectPetBathUserByPhone(String phone)
+    {
+        return userMapper.selectPetBathUserByPhone(phone);
+    }
+
     /**
      * 查询前台用户列表
      * 

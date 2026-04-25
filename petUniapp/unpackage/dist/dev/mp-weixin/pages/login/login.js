@@ -160,29 +160,29 @@ const _sfc_main = {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.loginType === "phone" ? 1 : "",
-    b: common_vendor.o(($event) => $options.switchLoginType("phone")),
+    b: common_vendor.o(($event) => $options.switchLoginType("phone"), "e1"),
     c: $data.loginType === "account" ? 1 : "",
-    d: common_vendor.o(($event) => $options.switchLoginType("account")),
+    d: common_vendor.o(($event) => $options.switchLoginType("account"), "cd"),
     e: $data.loginType === "phone"
   }, $data.loginType === "phone" ? {
     f: $data.phone,
-    g: common_vendor.o(($event) => $data.phone = $event.detail.value),
+    g: common_vendor.o(($event) => $data.phone = $event.detail.value, "a1"),
     h: $data.code,
-    i: common_vendor.o(($event) => $data.code = $event.detail.value),
+    i: common_vendor.o(($event) => $data.code = $event.detail.value, "ad"),
     j: common_vendor.t($options.codeBtnText),
     k: $data.isCounting || !$options.isPhoneValid,
-    l: common_vendor.o((...args) => $options.getCode && $options.getCode(...args)),
+    l: common_vendor.o((...args) => $options.getCode && $options.getCode(...args), "0d"),
     m: !$options.canLogin,
-    n: common_vendor.o((...args) => $options.handleLogin && $options.handleLogin(...args))
+    n: common_vendor.o((...args) => $options.handleLogin && $options.handleLogin(...args), "80")
   } : {}, {
     o: $data.loginType === "account"
   }, $data.loginType === "account" ? {
     p: $data.username,
-    q: common_vendor.o(($event) => $data.username = $event.detail.value),
+    q: common_vendor.o(($event) => $data.username = $event.detail.value, "76"),
     r: $data.password,
-    s: common_vendor.o(($event) => $data.password = $event.detail.value),
+    s: common_vendor.o(($event) => $data.password = $event.detail.value, "71"),
     t: !$options.canAccountLogin,
-    v: common_vendor.o((...args) => $options.handleAccountLogin && $options.handleAccountLogin(...args))
+    v: common_vendor.o((...args) => $options.handleAccountLogin && $options.handleAccountLogin(...args), "e9")
   } : {}, {
     w: common_assets._imports_0$1
   });

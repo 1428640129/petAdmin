@@ -270,7 +270,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           size: "24",
           color: "#ffffff"
         }),
-        b: common_vendor.o(goBack),
+        b: common_vendor.o(goBack, "94"),
         c: common_vendor.t(otherUserName.value),
         d: common_vendor.f(messages.value, (msg, k0, i0) => {
           return common_vendor.e({
@@ -301,23 +301,23 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           });
         }),
         e: scrollTop.value,
-        f: common_vendor.o(loadMore),
+        f: common_vendor.o(loadMore, "db"),
         g: common_vendor.p({
           type: "image",
           size: "24",
           color: "#ff6b35"
         }),
-        h: common_vendor.o(chooseImage),
+        h: common_vendor.o(chooseImage, "0b"),
         i: common_vendor.p({
           type: "videocam",
           size: "24",
           color: "#ff6b35"
         }),
-        j: common_vendor.o(chooseVideo),
-        k: common_vendor.o(sendTextMessage),
+        j: common_vendor.o(chooseVideo, "99"),
+        k: common_vendor.o(sendTextMessage, "7e"),
         l: inputText.value,
-        m: common_vendor.o(($event) => inputText.value = $event.detail.value),
-        n: common_vendor.o(sendTextMessage)
+        m: common_vendor.o(($event) => inputText.value = $event.detail.value, "6b"),
+        n: common_vendor.o(sendTextMessage, "22")
       };
     };
   }

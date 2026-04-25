@@ -104,7 +104,7 @@ public class SecurityConfig
                     // 对于 /auth/** 路径允许匿名访问（适配前端格式）
                     .requestMatchers("/auth/**").permitAll()
                     // 前台用户登录和注册接口允许匿名访问
-                    .requestMatchers("/bath/user/login", "/bath/user/register", "/bath/user/profile", "/bath/user/password", "/bath/user/uploadAvatar").permitAll()
+                    .requestMatchers("/bath/user/login", "/bath/user/loginBySms", "/bath/user/register", "/bath/user/profile", "/bath/user/password", "/bath/user/uploadAvatar").permitAll()
                     // 前台公开接口：轮播图和服务列表
                     .requestMatchers("/bath/carousel/enabled", "/bath/service/enabled").permitAll()
                     // 小程序预约接口允许匿名访问

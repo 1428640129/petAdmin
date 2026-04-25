@@ -53,7 +53,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           size: "16",
           color: "#ccc"
         }),
-        g: common_vendor.o(goToProfile),
+        g: common_vendor.o(goToProfile, "e0"),
         h: common_vendor.p({
           type: "gear",
           size: "20",
@@ -64,7 +64,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
           size: "16",
           color: "#ccc"
         }),
-        j: common_vendor.o(goToSettings)
+        j: common_vendor.o(goToSettings, "a6")
       });
     };
   }

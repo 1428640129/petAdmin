@@ -406,37 +406,37 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     h: $data.reviews.length === 0
   }) : {}, {
     j: $data.formData.petName,
-    k: common_vendor.o(($event) => $data.formData.petName = $event.detail.value),
+    k: common_vendor.o(($event) => $data.formData.petName = $event.detail.value, "cb"),
     l: common_vendor.t($data.formData.hairType ? $options.getHairTypeLabel($data.formData.hairType) : "请选择毛发类型"),
     m: !$data.formData.hairType ? 1 : "",
     n: $data.hairTypes,
     o: $data.hairTypeIndex,
-    p: common_vendor.o((...args) => $options.onHairTypeChange && $options.onHairTypeChange(...args)),
+    p: common_vendor.o((...args) => $options.onHairTypeChange && $options.onHairTypeChange(...args), "ff"),
     q: $data.formData.petBreed,
-    r: common_vendor.o(($event) => $data.formData.petBreed = $event.detail.value),
-    s: common_vendor.o((...args) => $options.calculatePrice && $options.calculatePrice(...args)),
+    r: common_vendor.o(($event) => $data.formData.petBreed = $event.detail.value, "e0"),
+    s: common_vendor.o((...args) => $options.calculatePrice && $options.calculatePrice(...args), "70"),
     t: $data.formData.petWeight,
-    v: common_vendor.o(($event) => $data.formData.petWeight = $event.detail.value),
+    v: common_vendor.o(($event) => $data.formData.petWeight = $event.detail.value, "ca"),
     w: common_vendor.t($data.formData.appointmentDate || "请选择日期"),
     x: !$data.formData.appointmentDate ? 1 : "",
     y: $data.formData.appointmentDate,
     z: $options.minDate,
-    A: common_vendor.o((...args) => $options.onDateChange && $options.onDateChange(...args)),
+    A: common_vendor.o((...args) => $options.onDateChange && $options.onDateChange(...args), "07"),
     B: common_vendor.t($data.formData.appointmentTime || "请选择时间"),
     C: !$data.formData.appointmentTime ? 1 : "",
     D: $data.formData.appointmentTime,
-    E: common_vendor.o((...args) => $options.onTimeChange && $options.onTimeChange(...args)),
+    E: common_vendor.o((...args) => $options.onTimeChange && $options.onTimeChange(...args), "b0"),
     F: $data.formData.contactPhone,
-    G: common_vendor.o(($event) => $data.formData.contactPhone = $event.detail.value),
+    G: common_vendor.o(($event) => $data.formData.contactPhone = $event.detail.value, "88"),
     H: $data.formData.remark,
-    I: common_vendor.o(($event) => $data.formData.remark = $event.detail.value),
+    I: common_vendor.o(($event) => $data.formData.remark = $event.detail.value, "cb"),
     J: $data.formData.expectedPrice
   }, $data.formData.expectedPrice ? {
     K: common_vendor.t($options.formatPrice($data.formData.expectedPrice))
   } : {}, {
     L: common_vendor.t($options.canSubmit ? "提交预约" : "请完善必填信息"),
     M: !$options.canSubmit,
-    N: common_vendor.o((...args) => $options.submitAppointment && $options.submitAppointment(...args))
+    N: common_vendor.o((...args) => $options.submitAppointment && $options.submitAppointment(...args), "1c")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-cb2df937"]]);

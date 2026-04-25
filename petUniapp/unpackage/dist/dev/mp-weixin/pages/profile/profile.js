@@ -146,14 +146,14 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       color: "#ccc"
     })
   }, {
-    d: common_vendor.o((...args) => $options.chooseAvatar && $options.chooseAvatar(...args)),
+    d: common_vendor.o((...args) => $options.chooseAvatar && $options.chooseAvatar(...args), "fd"),
     e: $data.form.nickName,
-    f: common_vendor.o(($event) => $data.form.nickName = $event.detail.value),
+    f: common_vendor.o(($event) => $data.form.nickName = $event.detail.value, "6e"),
     g: common_vendor.t($data.form.userName || "-"),
     h: $data.form.phone,
-    i: common_vendor.o(($event) => $data.form.phone = $event.detail.value),
+    i: common_vendor.o(($event) => $data.form.phone = $event.detail.value, "c3"),
     j: $data.saving,
-    k: common_vendor.o((...args) => $options.saveProfile && $options.saveProfile(...args))
+    k: common_vendor.o((...args) => $options.saveProfile && $options.saveProfile(...args), "3c")
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-dd383ca2"]]);

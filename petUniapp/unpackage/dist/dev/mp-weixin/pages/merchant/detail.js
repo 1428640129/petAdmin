@@ -103,7 +103,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     i: common_vendor.t($data.appointment.petWeight),
     j: common_vendor.t($data.appointment.contactName),
     k: common_vendor.t($data.appointment.contactPhone),
-    l: common_vendor.o((...args) => $options.makeCall && $options.makeCall(...args)),
+    l: common_vendor.o((...args) => $options.makeCall && $options.makeCall(...args), "ec"),
     m: $data.appointment.remark
   }, $data.appointment.remark ? {
     n: common_vendor.t($data.appointment.remark)
@@ -119,19 +119,19 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}) : {}, {
     v: $data.appointment.status === _ctx.APPOINTMENT_STATUS.PENDING
   }, $data.appointment.status === _ctx.APPOINTMENT_STATUS.PENDING ? {
-    w: common_vendor.o(($event) => $options.handleAction("reject"))
+    w: common_vendor.o(($event) => $options.handleAction("reject"), "46")
   } : {}, {
     x: $data.appointment.status === _ctx.APPOINTMENT_STATUS.PENDING
   }, $data.appointment.status === _ctx.APPOINTMENT_STATUS.PENDING ? {
-    y: common_vendor.o(($event) => $options.handleAction("confirm"))
+    y: common_vendor.o(($event) => $options.handleAction("confirm"), "1d")
   } : {}, {
     z: $data.appointment.status === _ctx.APPOINTMENT_STATUS.CONFIRMED
   }, $data.appointment.status === _ctx.APPOINTMENT_STATUS.CONFIRMED ? {
-    A: common_vendor.o(($event) => $options.handleAction("complete"))
+    A: common_vendor.o(($event) => $options.handleAction("complete"), "b9")
   } : {}, {
     B: $data.appointment.status === _ctx.APPOINTMENT_STATUS.COMPLETED && $data.appointment.review && !$data.appointment.review.reply
   }, $data.appointment.status === _ctx.APPOINTMENT_STATUS.COMPLETED && $data.appointment.review && !$data.appointment.review.reply ? {
-    C: common_vendor.o((...args) => $options.goToReply && $options.goToReply(...args))
+    C: common_vendor.o((...args) => $options.goToReply && $options.goToReply(...args), "01")
   } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-12858ede"]]);

@@ -100,7 +100,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       size: "16",
       color: "#ccc"
     }),
-    c: common_vendor.o((...args) => $options.goChangePassword && $options.goChangePassword(...args)),
+    c: common_vendor.o((...args) => $options.goChangePassword && $options.goChangePassword(...args), "b7"),
     d: common_vendor.p({
       type: "redo",
       size: "20",
@@ -111,21 +111,21 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       size: "16",
       color: "#ccc"
     }),
-    f: common_vendor.o((...args) => $options.logout && $options.logout(...args)),
+    f: common_vendor.o((...args) => $options.logout && $options.logout(...args), "53"),
     g: $data.showPasswordModal
   }, $data.showPasswordModal ? {
     h: $data.passwordForm.oldPassword,
-    i: common_vendor.o(($event) => $data.passwordForm.oldPassword = $event.detail.value),
+    i: common_vendor.o(($event) => $data.passwordForm.oldPassword = $event.detail.value, "76"),
     j: $data.passwordForm.newPassword,
-    k: common_vendor.o(($event) => $data.passwordForm.newPassword = $event.detail.value),
+    k: common_vendor.o(($event) => $data.passwordForm.newPassword = $event.detail.value, "81"),
     l: $data.passwordForm.confirmPassword,
-    m: common_vendor.o(($event) => $data.passwordForm.confirmPassword = $event.detail.value),
-    n: common_vendor.o(($event) => $data.showPasswordModal = false),
+    m: common_vendor.o(($event) => $data.passwordForm.confirmPassword = $event.detail.value, "ec"),
+    n: common_vendor.o(($event) => $data.showPasswordModal = false, "e9"),
     o: $data.changing,
-    p: common_vendor.o((...args) => $options.submitPassword && $options.submitPassword(...args)),
+    p: common_vendor.o((...args) => $options.submitPassword && $options.submitPassword(...args), "9d"),
     q: common_vendor.o(() => {
-    }),
-    r: common_vendor.o(($event) => $data.showPasswordModal = false)
+    }, "81"),
+    r: common_vendor.o(($event) => $data.showPasswordModal = false, "16")
   } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-7fad0a1c"]]);

@@ -139,12 +139,12 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
         })
       }, {
         b: messages.value.length === 0,
-        d: common_vendor.o(onPullDownRefresh),
-        e: common_vendor.o(sendMessage),
+        d: common_vendor.o(onPullDownRefresh, "5f"),
+        e: common_vendor.o(sendMessage, "aa"),
         f: common_assets._imports_0,
-        g: common_vendor.o(($event) => switchTab("index")),
+        g: common_vendor.o(($event) => switchTab("index"), "13"),
         h: common_assets._imports_1,
-        i: common_vendor.o(($event) => switchTab("my"))
+        i: common_vendor.o(($event) => switchTab("my"), "ee")
       });
     };
   }

@@ -1,6 +1,8 @@
 package com.pet.web.controller.bath;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +27,9 @@ import com.pet.common.core.page.TableDataInfo;
 import com.pet.common.enums.BusinessType;
 import com.pet.common.utils.poi.ExcelUtil;
 import com.pet.common.utils.SecurityUtils;
+import com.pet.common.utils.StringUtils;
 import com.pet.system.domain.PetBathUser;
+import com.pet.framework.web.service.SmsCodeService;
 import com.pet.business.service.IPetBathUserService;
 import com.pet.system.service.ISysConfigService;
 
@@ -46,6 +50,9 @@ public class PetBathUserController extends BaseController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private SmsCodeService smsCodeService;
 
     /**
      * 查询前台用户列表
@@ -190,15 +197,69 @@ public class PetBathUserController extends BaseController
         {
             return error("账号已停用");
         }
-        
-        // 清空密码
+
+        return buildBathLoginResult(user);
+    }
+
+    /**
+     * 小程序：短信验证码登录（未注册手机号将自动注册为顾客）
+     */
+    @PostMapping("/loginBySms")
+    public AjaxResult loginBySms(@RequestBody Map<String, String> body)
+    {
+        String phone = body != null ? body.get("phone") : null;
+        String code = body != null ? body.get("code") : null;
+        if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(code))
+        {
+            return error("手机号和验证码不能为空");
+        }
+        if (!smsCodeService.validateSmsCode(phone, code.trim()))
+        {
+            return error("验证码错误或已过期");
+        }
+
+        PetBathUser user = userService.selectPetBathUserByPhone(phone);
+        if (user == null)
+        {
+            user = userService.selectPetBathUserByUserName(phone);
+        }
+        if (user == null)
+        {
+            PetBathUser reg = new PetBathUser();
+            reg.setUserName(phone);
+            reg.setPhone(phone);
+            String tail = phone.length() >= 4 ? phone.substring(phone.length() - 4) : phone;
+            reg.setNickName("用户" + tail);
+            reg.setPassword(UUID.randomUUID().toString().replace("-", ""));
+            reg.setUserType("0");
+            int rows = userService.insertPetBathUser(reg);
+            if (rows <= 0 || reg.getUserId() == null)
+            {
+                return error("注册失败，请重试");
+            }
+            user = userService.selectPetBathUserById(reg.getUserId());
+        }
+
+        if (user == null)
+        {
+            return error("登录失败，请重试");
+        }
+        if ("1".equals(user.getStatus()))
+        {
+            return error("账号已停用");
+        }
+
+        return buildBathLoginResult(user);
+    }
+
+    /**
+     * 构建与账号密码登录一致的小程序登录返回
+     */
+    private AjaxResult buildBathLoginResult(PetBathUser user)
+    {
         user.setPassword(null);
-        
-        // 生成简单的token（使用userId + 时间戳 + 随机字符串）
-        // 实际项目中可以使用JWT，这里为了简化使用简单字符串
-        String token = "pet_bath_" + user.getUserId() + "_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().replace("-", "");
-        
-        // 构建返回数据，包含用户信息和token
+        String token = "pet_bath_" + user.getUserId() + "_" + System.currentTimeMillis() + "_"
+                + UUID.randomUUID().toString().replace("-", "");
         java.util.Map<String, Object> resultData = new java.util.HashMap<>();
         resultData.put("userId", user.getUserId());
         resultData.put("userName", user.getUserName());
@@ -208,7 +269,6 @@ public class PetBathUserController extends BaseController
         resultData.put("avatar", user.getAvatar());
         resultData.put("status", user.getStatus());
         resultData.put("token", token);
-        
         return success(resultData);
     }
 

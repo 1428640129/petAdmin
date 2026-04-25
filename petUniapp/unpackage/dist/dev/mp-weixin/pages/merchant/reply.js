@@ -62,10 +62,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     c: common_vendor.t($data.review.content),
     d: common_vendor.t($data.review.createTime),
     e: $data.replyContent,
-    f: common_vendor.o(($event) => $data.replyContent = $event.detail.value),
+    f: common_vendor.o(($event) => $data.replyContent = $event.detail.value, "37"),
     g: common_vendor.t($data.replyContent.length),
     h: !$options.canSubmit,
-    i: common_vendor.o((...args) => $options.submitReply && $options.submitReply(...args))
+    i: common_vendor.o((...args) => $options.submitReply && $options.submitReply(...args), "df")
   };
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-4b6a929d"]]);

@@ -439,15 +439,15 @@ const _sfc_main = {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: $data.activeTab === "all" ? 1 : "",
-    b: common_vendor.o(($event) => $options.switchStatusTab("all")),
+    b: common_vendor.o(($event) => $options.switchStatusTab("all"), "b7"),
     c: $data.activeTab === "0" ? 1 : "",
-    d: common_vendor.o(($event) => $options.switchStatusTab("0")),
+    d: common_vendor.o(($event) => $options.switchStatusTab("0"), "88"),
     e: $data.activeTab === "1" ? 1 : "",
-    f: common_vendor.o(($event) => $options.switchStatusTab("1")),
+    f: common_vendor.o(($event) => $options.switchStatusTab("1"), "d7"),
     g: $data.activeTab === "2" ? 1 : "",
-    h: common_vendor.o(($event) => $options.switchStatusTab("2")),
+    h: common_vendor.o(($event) => $options.switchStatusTab("2"), "0a"),
     i: $data.activeTab === "3" ? 1 : "",
-    j: common_vendor.o(($event) => $options.switchStatusTab("3")),
+    j: common_vendor.o(($event) => $options.switchStatusTab("3"), "84"),
     k: $data.loading && $data.appointmentList.length === 0
   }, $data.loading && $data.appointmentList.length === 0 ? {} : $data.appointmentList.length === 0 ? {} : {
     m: common_vendor.f($data.appointmentList, (item, k0, i0) => {
@@ -480,8 +480,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $data.hasMore && !$data.loading ? {} : {}, {
     o: !$data.hasMore && $data.appointmentList.length > 0
   }, !$data.hasMore && $data.appointmentList.length > 0 ? {} : {}, {
-    p: common_vendor.o((...args) => $options.loadMore && $options.loadMore(...args)),
-    q: common_vendor.o((...args) => $options.onRefresh && $options.onRefresh(...args)),
+    p: common_vendor.o((...args) => $options.loadMore && $options.loadMore(...args), "4e"),
+    q: common_vendor.o((...args) => $options.onRefresh && $options.onRefresh(...args), "ec"),
     r: $data.refreshing
   });
 }

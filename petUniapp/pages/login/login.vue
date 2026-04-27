@@ -79,6 +79,11 @@
 				</button>
 			</view>
 
+			<view class="register-entry">
+				<text class="register-tip">还没有账号？</text>
+				<text class="register-link" @click="goToRegister">去注册</text>
+			</view>
+
 			<!-- 其他登录方式 -->
 			<!-- <view class="other-login">
 				<text class="other-title">其他登录方式</text>
@@ -308,6 +313,17 @@
 					title: 'QQ登录功能开发中',
 					icon: 'none'
 				});
+			},
+			goToRegister() {
+				uni.navigateTo({
+					url: '/pages/register/register',
+					fail: () => {
+						uni.showToast({
+							title: '注册页面暂不可用',
+							icon: 'none'
+						});
+					}
+				});
 			}
 		}
 	}
@@ -471,6 +487,24 @@
 
 	.login-form {
 		margin-top: 20rpx;
+	}
+
+	.register-entry {
+		text-align: center;
+		margin-top: 6rpx;
+		margin-bottom: 10rpx;
+	}
+
+	.register-tip {
+		font-size: 24rpx;
+		color: #999;
+		margin-right: 8rpx;
+	}
+
+	.register-link {
+		font-size: 24rpx;
+		color: #F4A460;
+		font-weight: 600;
 	}
 
 	.account-input {

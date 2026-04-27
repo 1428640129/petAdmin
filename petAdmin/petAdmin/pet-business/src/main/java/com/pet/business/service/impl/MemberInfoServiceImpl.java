@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.pet.business.mapper.MemberInfoMapper;
 import com.pet.business.mapper.PointsRecordMapper;
@@ -144,7 +145,7 @@ public class MemberInfoServiceImpl implements IMemberInfoService
      * @return 结果
      */
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int addPoints(Long userId, Integer points, String pointsType, Long orderId, String remark)
     {
         // 更新会员积分
@@ -182,7 +183,7 @@ public class MemberInfoServiceImpl implements IMemberInfoService
      * @return 结果
      */
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int consumePoints(Long userId, Integer points, Long orderId, String remark)
     {
         MemberInfo memberInfo = memberInfoMapper.selectMemberInfoByUserId(userId);
@@ -215,7 +216,7 @@ public class MemberInfoServiceImpl implements IMemberInfoService
      * @return 结果
      */
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int addConsumption(Long userId, BigDecimal amount)
     {
         MemberInfo memberInfo = memberInfoMapper.selectMemberInfoByUserId(userId);

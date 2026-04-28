@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { onActivated, watch } from 'vue';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
 import { $t } from '@/locales';
@@ -8,7 +8,8 @@ defineOptions({ name: 'LineChart' });
 
 const appStore = useAppStore();
 
-const { domRef, updateOptions } = useEcharts(() => ({
+const { domRef, updateOptions } = useEcharts(
+  () => ({
   tooltip: {
     trigger: 'axis',
     axisPointer: {
@@ -97,7 +98,13 @@ const { domRef, updateOptions } = useEcharts(() => ({
       data: []
     }
   ]
-}));
+  }),
+  {
+    onRender() {
+      loadChartData();
+    }
+  }
+);
 
 async function loadChartData() {
   try {
@@ -145,10 +152,6 @@ function updateLocale() {
   });
 }
 
-async function init() {
-  loadChartData();
-}
-
 watch(
   () => appStore.locale,
   () => {
@@ -156,8 +159,9 @@ watch(
   }
 );
 
-// init
-init();
+onActivated(() => {
+  loadChartData();
+});
 </script>
 
 <template>

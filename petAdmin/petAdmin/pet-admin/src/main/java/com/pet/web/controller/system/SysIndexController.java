@@ -122,14 +122,15 @@ public class SysIndexController extends BaseController
         }
         lineChart.put("xAxis", dateList.toArray(new String[0]));
         
-        // 获取最近一个月的订单和用户数据（从30天前到今天）
-        Calendar oneMonthAgo = Calendar.getInstance();
-        oneMonthAgo.add(Calendar.DAY_OF_MONTH, -30);
-        oneMonthAgo.set(Calendar.HOUR_OF_DAY, 0);
-        oneMonthAgo.set(Calendar.MINUTE, 0);
-        oneMonthAgo.set(Calendar.SECOND, 0);
-        oneMonthAgo.set(Calendar.MILLISECOND, 0);
-        Date startDate = oneMonthAgo.getTime();
+        // 与 xAxis 对齐：30 个点对应「今天往前 29 天」至「今天」（与上面 dateList 循环一致）
+        // 原先用「今天-30 天」作起点会导致 dayIndex 最大为 30，超出 [0,29]，当天数据落不到任何桶里
+        Calendar periodStart = Calendar.getInstance();
+        periodStart.add(Calendar.DAY_OF_MONTH, -29);
+        periodStart.set(Calendar.HOUR_OF_DAY, 0);
+        periodStart.set(Calendar.MINUTE, 0);
+        periodStart.set(Calendar.SECOND, 0);
+        periodStart.set(Calendar.MILLISECOND, 0);
+        Date startDate = periodStart.getTime();
         
         Calendar now = Calendar.getInstance();
         now.set(Calendar.HOUR_OF_DAY, 23);
@@ -151,7 +152,7 @@ public class SysIndexController extends BaseController
                 orderCal.set(Calendar.SECOND, 0);
                 orderCal.set(Calendar.MILLISECOND, 0);
                 
-                long daysDiff = (orderCal.getTimeInMillis() - oneMonthAgo.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+                long daysDiff = (orderCal.getTimeInMillis() - periodStart.getTimeInMillis()) / (1000 * 60 * 60 * 24);
                 int dayIndex = (int) daysDiff;
                 if (dayIndex >= 0 && dayIndex < 30) {
                     serviceOrders[dayIndex]++;
@@ -174,7 +175,7 @@ public class SysIndexController extends BaseController
                 userCal.set(Calendar.SECOND, 0);
                 userCal.set(Calendar.MILLISECOND, 0);
                 
-                long daysDiff = (userCal.getTimeInMillis() - oneMonthAgo.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+                long daysDiff = (userCal.getTimeInMillis() - periodStart.getTimeInMillis()) / (1000 * 60 * 60 * 24);
                 int dayIndex = (int) daysDiff;
                 if (dayIndex >= 0 && dayIndex < 30) {
                     newUsers[dayIndex]++;
@@ -184,25 +185,59 @@ public class SysIndexController extends BaseController
         lineChart.put("newUsers", newUsers);
         statistics.put("lineChart", lineChart);
         
-        // 饼图数据：服务类型分布（0=基础洗浴,1=深度护理,2=豪华套餐）
+        // 饼图数据：按「预约里的服务名称」统计各洗护项目分布（避免多条不同服务因 serviceType 同为 0 都显示成「基础洗浴」）
         Map<String, Object> pieChart = new HashMap<>();
         List<PetBathService> services = serviceService.selectBathServiceList(null);
-        Map<String, Long> serviceTypeCount = services.stream()
-            .collect(Collectors.groupingBy(
-                s -> s.getServiceType() != null ? s.getServiceType() : "0",
-                Collectors.counting()
-            ));
+        Map<Long, String> serviceIdToName = new HashMap<>();
+        for (PetBathService s : services)
+        {
+            if (s.getServiceId() != null)
+            {
+                String nm = s.getServiceName();
+                serviceIdToName.put(s.getServiceId(), StringUtils.isNotEmpty(nm) ? nm : ("服务ID " + s.getServiceId()));
+            }
+        }
+        Map<String, Long> nameCount = new HashMap<>();
+        for (PetBathAppointment apt : appointments)
+        {
+            String name = apt.getServiceName();
+            if (StringUtils.isEmpty(name) && apt.getServiceId() != null)
+            {
+                name = serviceIdToName.get(apt.getServiceId());
+            }
+            if (StringUtils.isEmpty(name))
+            {
+                name = "未分类";
+            }
+            nameCount.merge(name, 1L, Long::sum);
+        }
+        List<Map.Entry<String, Long>> sorted = nameCount.entrySet().stream()
+            .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+            .collect(Collectors.toList());
+        final int maxSlices = 10;
         List<Map<String, Object>> pieData = new ArrayList<>();
-        String[] typeNames = new String[]{"基础洗浴", "深度护理", "豪华套餐"};
-        for (int i = 0; i < 3; i++) {
-            String typeKey = String.valueOf(i);
-            long count = serviceTypeCount.getOrDefault(typeKey, 0L);
-            if (count > 0) {
+        long otherSum = 0L;
+        for (int i = 0; i < sorted.size(); i++)
+        {
+            Map.Entry<String, Long> e = sorted.get(i);
+            if (i < maxSlices)
+            {
                 Map<String, Object> item = new HashMap<>();
-                item.put("name", typeNames[i]);
-                item.put("value", (int)count);
+                item.put("name", e.getKey());
+                item.put("value", e.getValue().intValue());
                 pieData.add(item);
             }
+            else
+            {
+                otherSum += e.getValue();
+            }
+        }
+        if (otherSum > 0L)
+        {
+            Map<String, Object> other = new HashMap<>();
+            other.put("name", "其他");
+            other.put("value", (int) otherSum);
+            pieData.add(other);
         }
         pieChart.put("data", pieData.toArray());
         statistics.put("pieChart", pieChart);

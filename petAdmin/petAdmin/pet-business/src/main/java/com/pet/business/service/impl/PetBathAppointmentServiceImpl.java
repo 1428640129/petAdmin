@@ -21,9 +21,6 @@ import com.pet.business.service.IPetBathNotificationService;
 import com.pet.business.service.IPetBathServiceService;
 import com.pet.business.service.IPetBathUserService;
 import com.pet.system.domain.PetBathUser;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +54,6 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
     private com.pet.business.service.IMemberInfoService memberInfoService;
 
     private static final Logger log = LoggerFactory.getLogger(PetBathAppointmentServiceImpl.class);
-    
-    private static final String ORDER_COMPLETED_SMS_URL = "https://push.spug.cc/sms/I767-Eg3T9CwDB7i-xrSsw";
-    
-    private final RestTemplate restTemplate = new RestTemplate();
 
     /**
      * 查询预约
@@ -494,37 +487,6 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
                 appointmentId,
                 order.getOrderId()
             );
-            
-            // 8. 发送订单完成短信通知（使用预约时填写的联系电话）
-            try
-            {
-                String phone = null;
-                // 从预约备注中提取联系电话
-                if (appointment.getRemark() != null && !appointment.getRemark().trim().isEmpty())
-                {
-                    String remark = appointment.getRemark();
-                    // 匹配格式：联系电话：手机号 或 联系电话：手机号
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("联系电话[：:]\\s*(1[3-9]\\d{9})");
-                    java.util.regex.Matcher matcher = pattern.matcher(remark);
-                    if (matcher.find())
-                    {
-                        phone = matcher.group(1);
-                    }
-                }
-                
-                if (phone != null && !phone.trim().isEmpty())
-                {
-                    sendOrderCompletedSms(phone);
-                }
-                else
-                {
-                    log.debug("预约备注中未找到联系电话，跳过短信发送：appointmentId={}", appointmentId);
-                }
-            }
-            catch (Exception e)
-            {
-                log.error("发送订单完成短信失败，appointmentId={}, userId={}", appointmentId, appointment.getUserId(), e);
-            }
         }
 
         return result;
@@ -615,64 +577,6 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
         result.put("oldPrice", appointment.getExpectedPrice());
         
         return result;
-    }
-
-    /**
-     * 发送订单完成短信通知
-     *
-     * @param phone 手机号
-     */
-    private void sendOrderCompletedSms(String phone)
-    {
-        try
-        {
-            // 构建 URL，添加 to 参数
-            String finalUrl = UriComponentsBuilder.fromHttpUrl(ORDER_COMPLETED_SMS_URL)
-                    .queryParam("to", phone)
-                    .encode(StandardCharsets.UTF_8)
-                    .toUriString();
-
-            log.debug("订单完成短信请求 URL: {}", finalUrl.replace(phone, "***"));
-
-            // 使用 GET 请求
-            org.springframework.http.ResponseEntity<String> response = restTemplate.getForEntity(finalUrl, String.class);
-
-            String responseBody = response.getBody();
-            boolean httpSuccess = response.getStatusCode().is2xxSuccessful();
-
-            // 检查响应体
-            boolean actualSuccess = httpSuccess;
-            if (responseBody != null)
-            {
-                // 检查是否包含错误信息
-                if (responseBody.contains("\"code\":") && !responseBody.contains("\"code\":200") && !responseBody.contains("\"code\": 200"))
-                {
-                    actualSuccess = false;
-                }
-                if (responseBody.contains("未匹配到推送对象") || responseBody.contains("模板编码错误") 
-                    || responseBody.contains("需要订阅会员"))
-                {
-                    actualSuccess = false;
-                }
-            }
-
-            if (actualSuccess)
-            {
-                log.info("订单完成短信发送成功，phone={}", phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-            }
-            else
-            {
-                log.warn("订单完成短信发送失败，phone={}, status={}, response={}", 
-                    phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"),
-                    response.getStatusCode(), 
-                    responseBody);
-            }
-        }
-        catch (Exception e)
-        {
-            log.error("订单完成短信发送异常，phone={}", 
-                phone != null ? phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2") : "null", e);
-        }
     }
 }
 

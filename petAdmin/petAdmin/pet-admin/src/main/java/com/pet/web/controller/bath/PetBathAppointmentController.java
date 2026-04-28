@@ -235,6 +235,20 @@ public class PetBathAppointmentController extends BaseController
     }
 
     /**
+     * 小程序查询预约详情（无需权限验证，与 miniprogram 列表同一路由前缀）
+     */
+    @GetMapping("/miniprogram/detail/{appointmentId}")
+    public AjaxResult getMiniprogramAppointmentDetail(@PathVariable Long appointmentId)
+    {
+        PetBathAppointment apt = bathAppointmentService.selectBathAppointmentByAppointmentId(appointmentId);
+        if (apt == null)
+        {
+            return error("预约不存在");
+        }
+        return success(apt);
+    }
+
+    /**
      * 小程序新增预约（无需权限验证）
      */
     @PostMapping("/miniprogram")

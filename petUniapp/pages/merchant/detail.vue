@@ -108,25 +108,24 @@
 </template>
 
 <script>
-	import { APPOINTMENT_STATUS, APPOINTMENT_STATUS_TEXT } from '@/utils/constants.js'
+	import { APPOINTMENT_STATUS, APPOINTMENT_STATUS_TEXT, PET_TYPE_TEXT } from '@/utils/constants.js'
 	
 	export default {
 		data() {
 			return {
 				appointmentId: '',
 				appointment: {
-					id: 1,
-					appointmentDate: '2026-01-21',
-					appointmentTime: '14:00',
-					serviceName: '基础洗浴',
-					price: 88,
-					status: APPOINTMENT_STATUS.PENDING, // 使用数字状态：'0'
-					petName: '旺财',
-					petType: '金毛',
-					petWeight: '25',
-					contactName: '张先生',
-					contactPhone: '13800138000',
-					remark: '狗狗比较怕水，请温柔一点',
+					appointmentDate: '',
+					appointmentTime: '',
+					serviceName: '',
+					price: '',
+					status: '',
+					petName: '',
+					petType: '',
+					petWeight: '',
+					contactName: '—',
+					contactPhone: '—',
+					remark: '',
 					review: null
 				}
 			}
@@ -138,21 +137,75 @@
 			}
 		},
 		methods: {
+			getBaseUrl() {
+				const app = getApp();
+				return (app && app.globalData && app.globalData.baseUrl) || 'http://localhost:8080';
+			},
+			mapAppointmentFromApi(apt) {
+				if (!apt) return this.appointment;
+				let dateStr = '';
+				let timeStr = '';
+				const rawTime = apt.appointmentTime;
+				if (rawTime) {
+					const s = typeof rawTime === 'string' ? rawTime.replace(/-/g, '/') : rawTime;
+					const d = new Date(s);
+					if (!isNaN(d.getTime())) {
+						const y = d.getFullYear();
+						const m = String(d.getMonth() + 1).padStart(2, '0');
+						const day = String(d.getDate()).padStart(2, '0');
+						dateStr = `${y}-${m}-${day}`;
+						const hh = String(d.getHours()).padStart(2, '0');
+						const mm = String(d.getMinutes()).padStart(2, '0');
+						timeStr = `${hh}:${mm}`;
+					}
+				}
+				let petTypeLabel = apt.petType != null ? String(apt.petType) : '';
+				if (petTypeLabel === '0' || petTypeLabel === '1') {
+					petTypeLabel = PET_TYPE_TEXT[petTypeLabel] || petTypeLabel;
+				}
+				let contactPhone = '—';
+				let contactName = '—';
+				const remark = apt.remark ? String(apt.remark) : '';
+				const phoneMatch = remark.match(/联系电话[：:]\s*(1[3-9]\d{9})/);
+				if (phoneMatch) contactPhone = phoneMatch[1];
+				const nameMatch = remark.match(/联系人[：:]\s*([^\s；;]+)/);
+				if (nameMatch) contactName = nameMatch[1];
+				const priceVal = apt.expectedPrice != null ? apt.expectedPrice : (apt.actualPrice != null ? apt.actualPrice : '');
+				return {
+					appointmentDate: dateStr,
+					appointmentTime: timeStr,
+					serviceName: apt.serviceName || '',
+					price: priceVal,
+					status: apt.status != null ? String(apt.status) : '',
+					petName: apt.petName || '',
+					petType: petTypeLabel,
+					petWeight: apt.petWeight != null ? String(apt.petWeight) : '',
+					contactName,
+					contactPhone,
+					remark,
+					review: null
+				};
+			},
 			async loadDetail() {
-				// 加载预约详情
-				// try {
-				//   const res = await uni.request({
-				//     url: `http://localhost:8080/bath/appointment/merchant/detail/${this.appointmentId}`,
-				//     method: 'GET'
-				//   });
-				//   this.appointment = res.data.data || {};
-				// } catch (error) {
-				//   console.error('加载详情失败', error);
-				//   uni.showToast({
-				//     title: '加载失败',
-				//     icon: 'none'
-				//   });
-				// }
+				if (!this.appointmentId) return;
+				try {
+					const baseUrl = this.getBaseUrl();
+					const res = await uni.request({
+						url: `${baseUrl}/bath/appointment/miniprogram/detail/${this.appointmentId}`,
+						method: 'GET'
+					});
+					if (res.statusCode === 200 && res.data && res.data.code === 200 && res.data.data) {
+						this.appointment = this.mapAppointmentFromApi(res.data.data);
+					} else {
+						throw new Error((res.data && res.data.msg) || '加载失败');
+					}
+				} catch (error) {
+					console.error('加载详情失败', error);
+					uni.showToast({
+						title: error.message || '加载失败',
+						icon: 'none'
+					});
+				}
 			},
 			handleAction(action) {
 				let title = '';

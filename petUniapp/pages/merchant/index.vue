@@ -209,8 +209,9 @@
 				this.loadAppointments();
 			},
 			viewDetail(item) {
+				const aid = item.appointmentId != null ? item.appointmentId : item.id;
 				uni.navigateTo({
-					url: `/pages/merchant/detail?id=${item.id}`
+					url: `/pages/merchant/detail?id=${aid}`
 				});
 			},
 			async handleAction(item, action) {

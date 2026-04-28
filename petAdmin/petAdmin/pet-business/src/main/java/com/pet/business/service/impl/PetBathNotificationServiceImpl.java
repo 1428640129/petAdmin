@@ -42,6 +42,72 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
     @Autowired
     private PetBathAppointmentMapper bathAppointmentMapper;
 
+    @Override
+    public String resolveSmsPhone(Long userId, Long appointmentId)
+    {
+        if (appointmentId != null)
+        {
+            try
+            {
+                PetBathAppointment appointment = bathAppointmentMapper.selectBathAppointmentById(appointmentId);
+                if (appointment != null && StringUtils.isNotEmpty(appointment.getRemark()))
+                {
+                    String remark = appointment.getRemark();
+                    String[] patterns = new String[] {
+                        "联系电话[：:]\\s*(1[3-9]\\d{9})",
+                        "联系手机[：:]\\s*(1[3-9]\\d{9})",
+                        "手机(?:号码)?[：:]\\s*(1[3-9]\\d{9})",
+                        "电话[：:]\\s*(1[3-9]\\d{9})"
+                    };
+                    for (String p : patterns)
+                    {
+                        java.util.regex.Matcher m = java.util.regex.Pattern.compile(p).matcher(remark);
+                        if (m.find())
+                        {
+                            return m.group(1);
+                        }
+                    }
+                    java.util.regex.Matcher any = java.util.regex.Pattern.compile("(1[3-9]\\d{9})").matcher(remark);
+                    if (any.find())
+                    {
+                        return any.group(1);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                log.warn("resolveSmsPhone 读取预约备注失败 appointmentId={}", appointmentId, e);
+            }
+        }
+        if (userId != null)
+        {
+            try
+            {
+                PetBathUser user = bathUserService.selectPetBathUserById(userId);
+                if (user != null)
+                {
+                    if (StringUtils.isNotEmpty(user.getPhone()))
+                    {
+                        String ph = user.getPhone().trim().replaceAll("\\s+", "");
+                        if (ph.matches("^1[3-9]\\d{9}$"))
+                        {
+                            return ph;
+                        }
+                    }
+                    if (StringUtils.isNotEmpty(user.getUserName()) && user.getUserName().trim().matches("^1[3-9]\\d{9}$"))
+                    {
+                        return user.getUserName().trim();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                log.warn("resolveSmsPhone 读取用户失败 userId={}", userId, e);
+            }
+        }
+        return null;
+    }
+
     /**
      * 查询通知记录
      * 
@@ -189,36 +255,11 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
                     return rows;
                 }
                 
-                String phone = null;
-                
-                // 从预约备注中提取联系电话
-                if (appointmentId != null)
-                {
-                    try
-                    {
-                        PetBathAppointment appointment = bathAppointmentMapper.selectBathAppointmentById(appointmentId);
-                        if (appointment != null && StringUtils.isNotEmpty(appointment.getRemark()))
-                        {
-                            String remark = appointment.getRemark();
-                            // 匹配格式：联系电话：手机号 或 联系电话：手机号
-                            java.util.regex.Pattern phonePattern = java.util.regex.Pattern.compile("联系电话[：:]\\s*(1[3-9]\\d{9})");
-                            java.util.regex.Matcher phoneMatcher = phonePattern.matcher(remark);
-                            if (phoneMatcher.find())
-                            {
-                                phone = phoneMatcher.group(1);
-                                log.debug("从预约备注中提取联系电话：appointmentId={}, phone={}", 
-                                    appointmentId, phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        log.warn("查询预约信息失败，无法提取联系电话：appointmentId={}", appointmentId, e);
-                    }
-                }
-                
+                String phone = resolveSmsPhone(userId, appointmentId);
                 if (StringUtils.isNotEmpty(phone))
                 {
+                    log.debug("短信接收手机号已解析：appointmentId={}, phone={}", appointmentId,
+                        phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
                     boolean smsResult = false;
                     // 预约确认通知使用专门的推送链接（只需要 to 参数）
                     if (NotificationTypeConstants.APPOINTMENT_CONFIRMED.equals(notificationType))
@@ -248,7 +289,7 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
                 }
                 else
                 {
-                    log.debug("预约备注中未找到联系电话，跳过短信发送：userId={}, appointmentId={}", userId, appointmentId);
+                    log.warn("无法解析短信接收手机号（备注无号码且用户未绑定手机），跳过短信：userId={}, appointmentId={}", userId, appointmentId);
                 }
             }
             catch (Exception e)

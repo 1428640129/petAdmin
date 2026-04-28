@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { onActivated, watch } from 'vue';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
 import { $t } from '@/locales';
@@ -8,7 +8,8 @@ defineOptions({ name: 'PieChart' });
 
 const appStore = useAppStore();
 
-const { domRef, updateOptions } = useEcharts(() => ({
+const { domRef, updateOptions } = useEcharts(
+  () => ({
   tooltip: {
     trigger: 'item'
   },
@@ -47,7 +48,14 @@ const { domRef, updateOptions } = useEcharts(() => ({
       data: [] as { name: string; value: number }[]
     }
   ]
-}));
+  }),
+  {
+    // 首次渲染后再拉数据：避免接口先返回时 updateOptions 因 chart 未就绪而直接 return
+    onRender() {
+      loadChartData();
+    }
+  }
+);
 
 async function loadChartData() {
   try {
@@ -88,10 +96,6 @@ function updateLocale() {
   });
 }
 
-async function init() {
-  loadChartData();
-}
-
 watch(
   () => appStore.locale,
   () => {
@@ -99,8 +103,9 @@ watch(
   }
 );
 
-// init
-init();
+onActivated(() => {
+  loadChartData();
+});
 </script>
 
 <template>

@@ -70,5 +70,14 @@ public interface IPetBathNotificationService
      * @return 结果
      */
     public int sendNotification(Long userId, String notificationType, String title, String content, Long appointmentId, Long orderId);
+
+    /**
+     * 解析用于发送业务短信的手机号：优先从预约备注中提取，其次使用前台用户表手机号或手机号账号
+     *
+     * @param userId 前台用户ID（pet_bath_user）
+     * @param appointmentId 预约ID
+     * @return 11位大陆手机号，无法解析时返回 null
+     */
+    public String resolveSmsPhone(Long userId, Long appointmentId);
 }
 

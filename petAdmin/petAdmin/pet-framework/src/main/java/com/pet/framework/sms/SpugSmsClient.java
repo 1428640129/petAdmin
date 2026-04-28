@@ -109,26 +109,7 @@ public class SpugSmsClient
 
             String responseBody = response.getBody();
             boolean httpSuccess = response.getStatusCode().is2xxSuccessful();
-
-            // 检查响应体
-            boolean actualSuccess = httpSuccess;
-            if (responseBody != null)
-            {
-                // Spug 成功时可能返回 "code\":200 或 "code\": 200，两种都认为是成功
-                boolean hasCodeField = responseBody.contains("\"code\":");
-                boolean isCode200 = responseBody.contains("\"code\":200") || responseBody.contains("\"code\": 200");
-
-                if (hasCodeField && !isCode200)
-                {
-                    actualSuccess = false;
-                }
-                // 如果包含错误信息，也认为失败
-                if (responseBody.contains("未匹配到推送对象") || responseBody.contains("模板编码错误") 
-                    || responseBody.contains("不能为空") || responseBody.contains("变量"))
-                {
-                    actualSuccess = false;
-                }
-            }
+            boolean actualSuccess = interpretSpugPushResult(responseBody, httpSuccess);
 
             if (actualSuccess)
             {
@@ -196,27 +177,7 @@ public class SpugSmsClient
 
             String responseBody = response.getBody();
             boolean httpSuccess = response.getStatusCode().is2xxSuccessful();
-
-            // 检查响应体，Spug 可能返回 200 但 body 里包含错误信息
-            // 例如：{"code": 204, "msg": "请求成功，但未匹配到推送对象"}
-            boolean actualSuccess = httpSuccess;
-            if (responseBody != null)
-            {
-                // Spug 成功时可能返回 "code\":200 或 "code\": 200，两种都认为是成功
-                boolean hasCodeField = responseBody.contains("\"code\":");
-                boolean isCode200 = responseBody.contains("\"code\":200") || responseBody.contains("\"code\": 200");
-
-                if (hasCodeField && !isCode200)
-                {
-                    // 有 code 字段但不是 200，则认为失败
-                    actualSuccess = false;
-                }
-                // 如果包含"未匹配到推送对象"等错误信息，也认为失败
-                if (responseBody.contains("未匹配到推送对象") || responseBody.contains("模板编码错误"))
-                {
-                    actualSuccess = false;
-                }
-            }
+            boolean actualSuccess = interpretSpugPushResult(responseBody, httpSuccess);
 
             if (actualSuccess)
             {
@@ -279,26 +240,7 @@ public class SpugSmsClient
 
             String responseBody = response.getBody();
             boolean httpSuccess = response.getStatusCode().is2xxSuccessful();
-
-            // 检查响应体
-            boolean actualSuccess = httpSuccess;
-            if (responseBody != null)
-            {
-                // Spug 成功时可能返回 "code\":200 或 "code\": 200，两种都认为是成功
-                boolean hasCodeField = responseBody.contains("\"code\":");
-                boolean isCode200 = responseBody.contains("\"code\":200") || responseBody.contains("\"code\": 200");
-
-                if (hasCodeField && !isCode200)
-                {
-                    actualSuccess = false;
-                }
-                // 如果包含错误信息，也认为失败
-                if (responseBody.contains("未匹配到推送对象") || responseBody.contains("模板编码错误") 
-                    || responseBody.contains("需要订阅会员"))
-                {
-                    actualSuccess = false;
-                }
-            }
+            boolean actualSuccess = interpretSpugPushResult(responseBody, httpSuccess);
 
             if (actualSuccess)
             {
@@ -362,26 +304,7 @@ public class SpugSmsClient
 
             String responseBody = response.getBody();
             boolean httpSuccess = response.getStatusCode().is2xxSuccessful();
-
-            // 检查响应体
-            boolean actualSuccess = httpSuccess;
-            if (responseBody != null)
-            {
-                // Spug 成功时可能返回 "code\":200 或 "code\": 200，两种都认为是成功
-                boolean hasCodeField = responseBody.contains("\"code\":");
-                boolean isCode200 = responseBody.contains("\"code\":200") || responseBody.contains("\"code\": 200");
-
-                if (hasCodeField && !isCode200)
-                {
-                    actualSuccess = false;
-                }
-                // 如果包含错误信息，也认为失败
-                if (responseBody.contains("未匹配到推送对象") || responseBody.contains("模板编码错误") 
-                    || responseBody.contains("需要订阅会员"))
-                {
-                    actualSuccess = false;
-                }
-            }
+            boolean actualSuccess = interpretSpugPushResult(responseBody, httpSuccess);
 
             if (actualSuccess)
             {
@@ -404,6 +327,42 @@ public class SpugSmsClient
                 phone != null ? phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2") : "null", e);
             return false;
         }
+    }
+
+    /**
+     * 解析 Spug 推送 HTTP 响应：仅当 JSON 含 {@code "code":200}（或带空格）且非明确失败文案时视为成功。
+     * 避免仅因 HTTP 200 或缺少 body 误判为「已发短信」。
+     */
+    private boolean interpretSpugPushResult(String responseBody, boolean httpSuccess)
+    {
+        if (!httpSuccess)
+        {
+            return false;
+        }
+        if (responseBody == null || responseBody.trim().isEmpty())
+        {
+            log.warn("Spug 调用 HTTP 成功但响应体为空，不计入发送成功");
+            return false;
+        }
+        String b = responseBody;
+        if (b.contains("未匹配到推送对象") || b.contains("模板编码错误")
+            || b.contains("需要订阅会员") || b.contains("\"code\":204") || b.contains("\"code\": 204")
+            || b.contains("不能为空") || b.contains("变量"))
+        {
+            return false;
+        }
+        if (!b.contains("\"code\":"))
+        {
+            log.warn("Spug 响应中无 JSON code 字段，不计入发送成功。响应前200字：{}", b.length() > 200 ? b.substring(0, 200) : b);
+            return false;
+        }
+        boolean is200 = b.contains("\"code\":200") || b.contains("\"code\": 200");
+        if (!is200)
+        {
+            log.warn("Spug 响应 code 非 200。响应前200字：{}", b.length() > 200 ? b.substring(0, 200) : b);
+            return false;
+        }
+        return true;
     }
 }
 

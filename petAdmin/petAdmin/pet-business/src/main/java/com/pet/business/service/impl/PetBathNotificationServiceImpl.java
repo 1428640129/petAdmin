@@ -129,13 +129,13 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
     @Override
     public List<PetBathNotification> selectBathNotificationList(PetBathNotification notification)
     {
-        // 如果用户没有指定通知类型，默认只显示预约确认和服务完成
+        // 如果用户没有指定通知类型，默认显示预约提交、预约确认、服务完成
         if (notification.getNotificationType() == null || notification.getNotificationType().isEmpty())
         {
             // 查询所有通知，然后过滤出预约确认和服务完成
             List<PetBathNotification> allList = bathNotificationMapper.selectBathNotificationList(notification);
             return allList.stream()
-                .filter(n -> "1".equals(n.getNotificationType()) || "3".equals(n.getNotificationType()))
+                .filter(n -> "0".equals(n.getNotificationType()) || "1".equals(n.getNotificationType()) || "3".equals(n.getNotificationType()))
                 .collect(java.util.stream.Collectors.toList());
         }
         return bathNotificationMapper.selectBathNotificationList(notification);
@@ -242,16 +242,14 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
                 return 0;
             }
 
-            // 2. 只对预约确认和服务完成发送短信
-            // 短信发送失败不影响通知记录的保存，使用 try-catch 捕获异常
-            // 始终使用预约时填写的联系电话发送短信
+            // 2. 预约已提交、预约已确认、服务完成：尝试发短信（失败不影响已落库的通知）
             try
             {
-                // 只处理预约确认和服务完成两种类型
-                if (!NotificationTypeConstants.APPOINTMENT_CONFIRMED.equals(notificationType) 
+                if (!NotificationTypeConstants.APPOINTMENT_CREATED.equals(notificationType)
+                    && !NotificationTypeConstants.APPOINTMENT_CONFIRMED.equals(notificationType)
                     && !NotificationTypeConstants.SERVICE_COMPLETED.equals(notificationType))
                 {
-                    log.debug("通知类型不是预约确认或服务完成，跳过短信发送：notificationType={}", notificationType);
+                    log.debug("通知类型无需发短信，跳过：notificationType={}", notificationType);
                     return rows;
                 }
                 
@@ -261,13 +259,14 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
                     log.debug("短信接收手机号已解析：appointmentId={}, phone={}", appointmentId,
                         phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
                     boolean smsResult = false;
-                    // 预约确认通知使用专门的推送链接（只需要 to 参数）
-                    if (NotificationTypeConstants.APPOINTMENT_CONFIRMED.equals(notificationType))
+                    // 预约已提交、预约已确认：使用 Spug 预约类推送链接（只需 to 参数；模板内容在 Spug 后台配置）
+                    if (NotificationTypeConstants.APPOINTMENT_CREATED.equals(notificationType)
+                        || NotificationTypeConstants.APPOINTMENT_CONFIRMED.equals(notificationType))
                     {
-                        log.info("开始发送预约确认短信：phone={}, appointmentId={}", 
-                            phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"), appointmentId);
+                        log.info("开始发送预约类短信：type={}, phone={}, appointmentId={}",
+                            notificationType, phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"), appointmentId);
                         smsResult = spugSmsClient.sendAppointmentSms(phone);
-                        log.info("预约确认短信发送结果：success={}, phone={}", smsResult, 
+                        log.info("预约类短信发送结果：success={}, type={}, phone={}", smsResult, notificationType,
                             phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
                     }
                     // 服务完成通知使用专门的推送链接（只需要 to 参数）
@@ -303,8 +302,9 @@ public class PetBathNotificationServiceImpl implements IPetBathNotificationServi
         }
         catch (Exception e)
         {
-            log.error("发送通知异常：userId={}, notificationType={}, title={}", userId, notificationType, title, e);
-            throw e; // 重新抛出异常，触发事务回滚
+            // 不因通知落库失败回滚上层业务（例如预约已插入）
+            log.error("发送通知异常（已忽略，不影响主业务）：userId={}, notificationType={}, title={}", userId, notificationType, title, e);
+            return 0;
         }
     }
 }

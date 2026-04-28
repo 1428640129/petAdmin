@@ -153,7 +153,34 @@ public class PetBathAppointmentServiceImpl implements IPetBathAppointmentService
                 appointment.setCreateBy("miniprogram_user");
             }
         }
-        return bathAppointmentMapper.insertBathAppointment(appointment);
+        int rows = bathAppointmentMapper.insertBathAppointment(appointment);
+        // 预约提交成功：站内通知 + 短信（与「商家确认」共用 Spug 预约模板；手机号见 resolveSmsPhone）
+        if (rows > 0 && appointment.getUserId() != null && appointment.getAppointmentId() != null)
+        {
+            try
+            {
+                String title = "预约已提交";
+                StringBuilder content = new StringBuilder();
+                content.append("您已成功提交")
+                    .append(appointment.getServiceName() != null ? appointment.getServiceName() : "宠物洗护")
+                    .append("预约，单号：")
+                    .append(appointment.getAppointmentNo() != null ? appointment.getAppointmentNo() : String.valueOf(appointment.getAppointmentId()))
+                    .append("，请等待商家确认。");
+                bathNotificationService.sendNotification(
+                    appointment.getUserId(),
+                    NotificationTypeConstants.APPOINTMENT_CREATED,
+                    title,
+                    content.toString(),
+                    appointment.getAppointmentId(),
+                    null);
+            }
+            catch (Exception e)
+            {
+                log.warn("预约提交后发送通知/短信失败（预约记录已保存） appointmentId={}, userId={}, err={}",
+                    appointment.getAppointmentId(), appointment.getUserId(), e.getMessage());
+            }
+        }
+        return rows;
     }
 
     /**

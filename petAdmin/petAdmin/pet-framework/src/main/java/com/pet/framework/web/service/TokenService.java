@@ -65,6 +65,11 @@ public class TokenService
         String token = getToken(request);
         if (StringUtils.isNotEmpty(token))
         {
+            // 小程序 Bearer pet_bath_* 等不是后台 JWT，避免 parseClaimsJws 抛错刷 ERROR 日志
+            if (!isAdminJwtToken(token))
+            {
+                return null;
+            }
             try
             {
                 Claims claims = parseToken(token);
@@ -80,6 +85,24 @@ public class TokenService
             }
         }
         return null;
+    }
+
+    /** 后台登录 JWT 为 header.payload.sig 三段，含且仅含 2 个英文句点 */
+    private static boolean isAdminJwtToken(String token)
+    {
+        if (StringUtils.isEmpty(token) || token.startsWith("pet_bath_"))
+        {
+            return false;
+        }
+        int dots = 0;
+        for (int i = 0; i < token.length(); i++)
+        {
+            if (token.charAt(i) == '.')
+            {
+                dots++;
+            }
+        }
+        return dots == 2;
     }
 
     /**
